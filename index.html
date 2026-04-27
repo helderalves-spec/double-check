@@ -1,315 +1,50 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>SISTEMA SPX - CONTROLE TOTAL</title>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+function init() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
     
-    <style>
-        :root { 
-            --cor-header: #ef4444; 
-            --cor-ok: #22c55e; 
-            --cor-backlog: #facc15; 
-            --cor-dup: #1d4ed8; 
-            --cor-rota: #be123c; 
-            --cor-reset: #f97316;
-            --cor-copy: #6366f1;
-        }
-        body { font-family: 'Arial Narrow', Arial, sans-serif; margin: 0; background: #f3f4f6; display: flex; height: 100vh; overflow: hidden; }
+    // PEGA O LINK DO SITE E REMOVE PARÂMETROS ANTIGOS
+    let currentUrl = window.location.href.split('?')[0].split('#')[0];
+
+    for (let i = 1; i <= TOTAL_PAGINAS; i++) {
+        paginasData[i] = { at: null, rota: null, total: 0, bips: [] };
         
-        .sidebar { width: 220px; background: #1f2937; color: white; overflow-y: auto; flex-shrink: 0; border-right: 1px solid #111827; }
-        .sidebar h2 { font-size: 11px; padding: 15px 10px 5px; background: #111827; margin: 0; text-align: center; color: #9ca3af; letter-spacing: 1px; }
-        .sidebar .url-tag { font-size: 9px; color: #60a5fa; text-align: center; display: block; padding-bottom: 15px; background: #111827; border-bottom: 1px solid #374151; }
-        .tab-link { padding: 12px 15px; border-bottom: 1px solid #374151; cursor: pointer; font-size: 11px; transition: 0.2s; }
-        .tab-link:hover { background: #374151; }
-        .tab-link.active { background: var(--cor-dup); font-weight: bold; border-left: 4px solid #fff; }
+        // GERA O LINK QUE O CELULAR VAI ACESSAR
+        const linkParaCelular = `${currentUrl}?p=${i}`;
+        const qrUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(linkParaCelular)}`;
 
-        .main-content { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
-        .page { display: none; height: 100%; }
-        .page.active { display: block; }
+        const btn = document.createElement('div');
+        btn.className = 'tab-link';
+        btn.id = `link-${i}`;
+        btn.innerHTML = `PÁGINA ${i} <br><small id="label-${i}" style="opacity:0.6">Vazia</small>`;
+        btn.onclick = () => switchTab(i);
+        sidebar.appendChild(btn);
 
-        .header-status { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr 0.6fr 0.6fr 0.6fr 0.8fr 0.8fr 80px; 
-            background: var(--cor-header); 
-            color: white; 
-            padding: 10px; 
-            text-align: center; 
-            font-weight: bold; 
-            border-radius: 4px; 
-            margin-bottom: 10px; 
-            align-items: center;
-            gap: 5px;
-        }
-        .header-label { font-size: 10px; text-transform: uppercase; display: block; opacity: 0.8; margin-bottom: 2px; }
-        .qr-container { background: white; padding: 3px; border-radius: 3px; display: flex; justify-content: center; align-items: center; }
-        .qr-container img { width: 70px; height: 70px; }
-
-        .input-bar { display: flex; gap: 10px; margin-bottom: 15px; }
-        .scan-box { flex: 1; padding: 15px; font-size: 22px; border: 3px solid #333; border-radius: 6px; outline: none; background: #fff; }
-        .scan-box:focus { border-color: var(--cor-dup); }
-
-        .layout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 15px; align-items: start; }
-        .main-table-container { background: white; border-radius: 4px; border: 1px solid #ccc; height: 60vh; overflow-y: auto; }
-        .main-table { width: 100%; border-collapse: collapse; }
-        .main-table th { background: #333; color: white; font-size: 12px; padding: 10px; position: sticky; top: 0; text-align: left; }
-        .main-table td { border-bottom: 1px solid #eee; padding: 8px 10px; font-size: 13px; font-weight: bold; }
-
-        .error-grid { display: grid; grid-template-columns: repeat(3, 1fr); background: #333; gap: 1px; border: 1px solid #333; border-radius: 4px; overflow: hidden; }
-        .error-header { color: white; padding: 8px; text-align: center; font-size: 10px; font-weight: bold; }
-        .error-list { background: white; height: 200px; overflow-y: auto; font-size: 11px; padding: 5px; font-weight: bold; }
-
-        .row-ok { background-color: var(--cor-ok) !important; color: white; }
-        .row-backlog { background-color: var(--cor-backlog) !important; color: black; }
-        .row-duplicado { background-color: var(--cor-dup) !important; color: white; }
-        .row-outrarota { background-color: var(--cor-rota) !important; color: white; }
-        
-        .btn { padding: 8px 3px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; transition: 0.2s; text-transform: uppercase; font-size: 9px; }
-    </style>
-</head>
-<body>
-
-    <div class="sidebar" id="sidebar">
-        <h2>SISTEMA SPX CLOUD</h2>
-        <span class="url-tag">OPERAÇÃO CENTRALIZADA</span>
-        <div class="tab-link active" onclick="switchTab('master')">⚙️ DELIVERY ASSIGNMENT</div>
-    </div>
-
-    <div class="main-content" id="mainContent">
-        <div id="page-master" class="page active">
-            <h1 style="margin-top:0; color:#1f2937;">Gestão Centralizada</h1>
-            <div style="background:white; padding:25px; border-radius:8px; border:1px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <label style="font-weight:bold;">1. Importar Planilha Mestre:</label><br><br>
-                <input type="file" id="fileInput" accept=".xlsx, .xls"><br><br>
-                <hr>
-                <label style="font-weight:bold;">2. Controles do Servidor:</label><br><br>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn" style="background:var(--cor-ok); padding: 10px 15px;" onclick="exportarPorPagina()">📥 BAIXAR RELATÓRIO GERAL</button>
-                    <button class="btn" style="background:var(--cor-reset); padding: 10px 15px;" onclick="limparApenasBase()">🗑️ LIMPAR PLANILHA MESTRE</button>
-                    <button class="btn" style="background:var(--cor-header); padding: 10px 15px;" onclick="limparBancoRemoto()">⚠️ LIMPAR TUDO (RESET TOTAL)</button>
+        const page = document.createElement('div');
+        page.className = 'page';
+        page.id = `page-${i}`;
+        page.innerHTML = `
+            <div class="header-status">
+                <div><span class="header-label">Atribuição</span><span id="at-${i}">---</span></div>
+                <div><span class="header-label">Rota</span><span id="rt-${i}">---</span></div>
+                <div><span class="header-label">Sistema</span><span id="qs-${i}">0</span></div>
+                <div><span class="header-label">Bipada</span><span id="qb-${i}">0</span></div>
+                <div><span class="header-label">Faltas</span><span id="ft-${i}">0</span></div>
+                <div><button class="btn" style="background:var(--cor-copy); width: 100%;" onclick="copiarBrsCorretas(${i})">📋 COPIAR BRs</button></div>
+                <div><button class="btn" style="background:var(--cor-reset); width: 100%;" onclick="limparPaginaEspecifica(${i})">🔄 RESET PÁG</button></div>
+                <div class="qr-container">
+                    <img src="${qrUrl}" alt="QR Code" style="background: white;">
                 </div>
-                <p id="infoBase" style="margin-top: 20px; font-weight: bold; color: #1d4ed8; font-size: 16px;"></p>
             </div>
-        </div>
-    </div>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBXv0XRtZMGtrYKrBzHGm7o2G5rRO3yLcE",
-        authDomain: "conferencia-spx-ca6fa.firebaseapp.com",
-        databaseURL: "https://conferencia-spx-ca6fa-default-rtdb.firebaseio.com",
-        projectId: "conferencia-spx-ca6fa",
-        storageBucket: "conferencia-spx-ca6fa.firebasestorage.app",
-        messagingSenderId: "555299403713",
-        appId: "1:555299403713:web:a093d965b7d787c28ee140",
-        measurementId: "G-6L0LZ9BV48"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let baseGeral = {}; 
-    let paginasData = {}; 
-    const TOTAL_PAGINAS = 100;
-
-    db.ref("operacao/base").on("value", (snapshot) => {
-        baseGeral = snapshot.val() || {};
-        document.getElementById('infoBase').innerText = Object.keys(baseGeral).length > 0 ? 
-            "✅ " + Object.keys(baseGeral).length + " pedidos carregados na base." : "⚠️ Nenhuma planilha carregada.";
-        db.ref("operacao/bips").once("value", (snapBips) => {
-            reprocessarDadosRemotos(snapBips.val() || {});
-        });
-    });
-
-    db.ref("operacao/bips").on("value", (snapshot) => {
-        reprocessarDadosRemotos(snapshot.val() || {});
-    });
-
-    function init() {
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const baseUrl = window.location.href.split('?')[0].split('#')[0];
-
-        for (let i = 1; i <= TOTAL_PAGINAS; i++) {
-            paginasData[i] = { at: null, rota: null, total: 0, bips: [] };
-            
-            // Link específico para o QR Code (ele vai tentar forçar a aba ao abrir)
-            const qrUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(baseUrl)}?p=${i}`;
-
-            const btn = document.createElement('div');
-            btn.className = 'tab-link';
-            btn.id = `link-${i}`;
-            btn.innerHTML = `PÁGINA ${i} <br><small id="label-${i}" style="opacity:0.6">Vazia</small>`;
-            btn.onclick = () => switchTab(i);
-            sidebar.appendChild(btn);
-
-            const page = document.createElement('div');
-            page.className = 'page';
-            page.id = `page-${i}`;
-            page.innerHTML = `
-                <div class="header-status">
-                    <div><span class="header-label">Atribuição</span><span id="at-${i}">---</span></div>
-                    <div><span class="header-label">Rota</span><span id="rt-${i}">---</span></div>
-                    <div><span class="header-label">Sistema</span><span id="qs-${i}">0</span></div>
-                    <div><span class="header-label">Bipada</span><span id="qb-${i}">0</span></div>
-                    <div><span class="header-label">Faltas</span><span id="ft-${i}">0</span></div>
-                    <div><button class="btn" style="background:var(--cor-copy); width: 100%;" onclick="copiarBrsCorretas(${i})">📋 COPIAR BRs</button></div>
-                    <div><button class="btn" style="background:var(--cor-reset); width: 100%;" onclick="limparPaginaEspecifica(${i})">🔄 RESET PÁG</button></div>
-                    <div class="qr-container">
-                        <img src="${qrUrl}" title="QR Code Página ${i}">
-                    </div>
-                </div>
-                <div class="input-bar"><input type="text" class="scan-box" id="input-${i}" placeholder="Bipe aqui..." onkeypress="handleScan(event, ${i})"></div>
-                <div class="layout-grid">
-                    <div class="main-table-container"><table class="main-table" id="table-${i}"><thead><tr><th>Código BR</th><th>OBS</th><th>Rota</th><th>Status</th></tr></thead><tbody></tbody></table></div>
-                    <div>
-                        <div class="error-grid">
-                            <div class="error-header" style="background:var(--cor-backlog);color:black">BACKLOG</div>
-                            <div class="error-header" style="background:var(--cor-rota)">ROTA</div>
-                            <div class="error-header" style="background:var(--cor-dup)">DUP</div>
-                            <div id="err-back-${i}" class="error-list"></div>
-                            <div id="err-rot-${i}" class="error-list"></div>
-                            <div id="err-dup-${i}" class="error-list"></div>
-                        </div>
-                        <div style="background:#333; color:white; padding:5px; text-align:center; font-size:11px; margin-top:10px;">FALTANTES</div>
-                        <div id="faltas-${i}" style="background:white; height:180px; overflow-y:auto; font-size:11px; padding:5px; border:1px solid #333; color:red;"></div>
-                    </div>
-                </div>
             `;
-            mainContent.appendChild(page);
-        }
-        
-        // Verifica se veio via link de QR Code
-        const urlParams = new URLSearchParams(window.location.search);
-        if(urlParams.has('p')) switchTab(urlParams.get('p'));
+        // Certifique-se de manter o restante do conteúdo interno (input-bar, layout-grid) igual ao anterior
+        mainContent.appendChild(page);
     }
-
-    function copiarBrsCorretas(idx) {
-        const corretas = paginasData[idx].bips.filter(b => b.classe === "row-ok").map(b => b.br);
-        if (corretas.length === 0) return alert("Nada para copiar.");
-        navigator.clipboard.writeText(corretas.join('\n')).then(() => alert(`${corretas.length} BRs copiadas!`));
+    
+    // Lógica para abrir a página vinda do QR Code
+    const urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.has('p')) {
+        const paginaDestino = urlParams.get('p');
+        setTimeout(() => switchTab(paginaDestino), 500);
     }
-
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const data = new Uint8Array(event.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-            const tempBase = {};
-            json.forEach(row => {
-                const br = String(row['SPX tracking num'] || row['Pedidos'] || row['Tracking Number'] || '').trim();
-                const rotaID = row['Corridor-Cage/Route'] || row['Cluster'] || row['Route Number'] || '---';
-                if(br) tempBase[br] = { at: row['Task ID'] || row['Atribuição'] || '---', rota: rotaID };
-            });
-            db.ref("operacao/base").set(tempBase);
-            alert("Base de dados atualizada!");
-        };
-        reader.readAsArrayBuffer(e.target.files[0]);
-    });
-
-    function handleScan(event, idx) {
-        if (event.key === 'Enter') {
-            const br = event.target.value.trim();
-            if (!br) return;
-            db.ref(`operacao/bips/p${idx}`).push({ br: br, ts: Date.now() });
-            event.target.value = '';
-        }
-    }
-
-    function reprocessarDadosRemotos(dadosBips) {
-        for (let i = 1; i <= TOTAL_PAGINAS; i++) {
-            const pag = paginasData[i];
-            const bipsRemotos = dadosBips[`p${i}`] || {};
-            pag.bips = [];
-            pag.at = null;
-            const listaBips = Object.values(bipsRemotos).sort((a,b) => a.ts - b.ts);
-            
-            listaBips.forEach(b => {
-                const item = baseGeral[b.br];
-                if (!pag.at && item) { pag.at = item.at; pag.rota = item.rota; }
-            });
-
-            listaBips.forEach(b => {
-                const item = baseGeral[b.br];
-                let status = "row-ok", obs = "OK", stText = "CORRETA", rota = item ? item.rota : "N/A";
-                const contagem = listaBips.filter(x => x.br === b.br).length;
-
-                if (contagem > 1) { status = "row-duplicado"; obs = "Duplicidade"; stText = "DUPLICADO"; } 
-                else if (!item) { status = "row-backlog"; obs = "Backlog"; stText = "INCORRETA"; }
-                else if (item.at !== pag.at) { status = "row-outrarota"; obs = "Outra Rota"; stText = "INCORRETA"; rota = item.rota; }
-
-                pag.bips.push({ br: b.br, obs, status: stText, classe: status, rota });
-            });
-            renderizarPagina(i);
-        }
-    }
-
-    function renderizarPagina(idx) {
-        const pag = paginasData[idx];
-        const tbody = document.querySelector(`#table-${idx} tbody`);
-        if(!tbody) return;
-        tbody.innerHTML = "";
-        document.getElementById(`err-back-${idx}`).innerHTML = "";
-        document.getElementById(`err-rot-${idx}`).innerHTML = "";
-        document.getElementById(`err-dup-${idx}`).innerHTML = "";
-        
-        if (pag.at) {
-            pag.total = Object.values(baseGeral).filter(v => v.at === pag.at).length;
-            document.getElementById(`at-${idx}`).innerText = pag.at;
-            document.getElementById(`rt-${idx}`).innerText = pag.rota;
-            document.getElementById(`qs-${idx}`).innerText = pag.total;
-            document.getElementById(`label-${idx}`).innerText = pag.rota;
-        }
-
-        pag.bips.slice().reverse().forEach(b => {
-            const row = tbody.insertRow(); row.className = b.classe;
-            row.innerHTML = `<td>${b.br}</td><td>${b.obs}</td><td>${b.rota}</td><td>${b.status}</td>`;
-            if (b.classe === "row-backlog") { if(!document.getElementById(`err-back-${idx}`).innerText.includes(b.br)) document.getElementById(`err-back-${idx}`).innerHTML += `<div>${b.br}</div>`; }
-            if (b.classe === "row-outrarota") { if(!document.getElementById(`err-rot-${idx}`).innerText.includes(b.br)) document.getElementById(`err-rot-${idx}`).innerHTML += `<div>${b.br}</div>`; }
-            if (b.classe === "row-duplicado") { if(!document.getElementById(`err-dup-${idx}`).innerText.includes(b.br)) document.getElementById(`err-dup-${idx}`).innerHTML += `<div>${b.br}</div>`; }
-        });
-
-        const okCount = pag.bips.filter(b => b.classe === "row-ok").length;
-        document.getElementById(`qb-${idx}`).innerText = okCount;
-        document.getElementById(`ft-${idx}`).innerText = (pag.total || 0) - okCount;
-        const faltantes = Object.keys(baseGeral).filter(k => baseGeral[k].at === pag.at && !pag.bips.some(b => b.br === k));
-        document.getElementById(`faltas-${idx}`).innerHTML = faltantes.map(f => `<div>${f}</div>`).join('');
-    }
-
-    function limparPaginaEspecifica(idx) { if(confirm("Limpar bips desta página?")) db.ref(`operacao/bips/p${idx}`).remove(); }
-    function limparApenasBase() { if(confirm("Apagar Planilha Mestre?")) db.ref("operacao/base").remove(); }
-    function limparBancoRemoto() { if(confirm("RESET TOTAL?")) { db.ref("operacao").remove(); location.reload(); } }
-
-    function exportarPorPagina() {
-        const wb = XLSX.utils.book_new();
-        let temDados = false;
-        for (let i = 1; i <= TOTAL_PAGINAS; i++) {
-            if (paginasData[i].bips.length > 0) {
-                temDados = true;
-                const wsData = [["PEDIDO", "OBSERVAÇÃO", "ROTA", "STATUS"]];
-                paginasData[i].bips.forEach(b => wsData.push([b.br, b.obs, b.rota, b.status]));
-                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), `Página ${i}`);
-            }
-        }
-        if (temDados) XLSX.writeFile(wb, `Relatorio_SPX.xlsx`);
-    }
-
-    function switchTab(id) {
-        document.querySelectorAll('.page, .tab-link').forEach(el => el.classList.remove('active'));
-        if(id === 'master') {
-            document.getElementById('page-master').classList.add('active');
-            document.querySelectorAll('.tab-link')[0].classList.add('active');
-        } else {
-            document.getElementById(`page-${id}`).classList.add('active');
-            document.getElementById(`link-${id}`).classList.add('active');
-            setTimeout(() => document.getElementById(`input-${id}`).focus(), 100);
-        }
-    }
-    window.onload = init;
-</script>
-</body>
-</html>
+}
 conferencia - spx 2.html
