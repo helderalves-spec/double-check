@@ -2,21 +2,25 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA SPX - CONTROLE TOTAL</title>
+    <title>SISTEMA SPX - CONTROLE TOTAL & TOTEM</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
+   
     <style>
-        :root { 
-            --cor-header: #ef4444; 
-            --cor-ok: #22c55e; 
-            --cor-backlog: #facc15; 
-            --cor-dup: #1d4ed8; 
-            --cor-rota: #be123c; 
+        :root {
+            --cor-header: #ef4444;
+            --cor-ok: #22c55e;
+            --cor-backlog: #facc15;
+            --cor-dup: #1d4ed8;
+            --cor-rota: #be123c;
             --cor-reset: #f97316;
             --cor-copy: #6366f1;
-            /* Cores do Tema Claro */
+            /* Cores Shopee */
+            --shopee-orange: #ee4d2d;
+            --shopee-bg: #f5f5f5;
+           
+            /* Cores do Tema Claro (Padrão Master) */
             --bg-body: #f3f4f6;
             --bg-card: #ffffff;
             --text-main: #1f2937;
@@ -29,57 +33,49 @@
             --bg-card: #1f2937;
             --text-main: #f3f4f6;
             --border-color: #374151;
+            --shopee-bg: #121212; /* Fundo escuro para a página da Shopee */
         }
 
         body { font-family: 'Arial Narrow', Arial, sans-serif; margin: 0; background: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; transition: background 0.3s; }
-        
+       
         .sidebar { width: 220px; background: #1f2937; color: white; overflow-y: auto; flex-shrink: 0; border-right: 1px solid #111827; }
         .sidebar h2 { font-size: 11px; padding: 15px 10px 5px; background: #111827; margin: 0; text-align: center; color: #9ca3af; letter-spacing: 1px; }
         .sidebar .url-tag { font-size: 9px; color: #60a5fa; text-align: center; display: block; padding-bottom: 15px; background: #111827; border-bottom: 1px solid #374151; }
-        .tab-link { padding: 12px 15px; border-bottom: 1px solid #374151; cursor: pointer; font-size: 11px; transition: 0.2s; color: #d1d5db; }
+        .tab-link { padding: 12px 15px; border-bottom: 1px solid #374151; cursor: pointer; font-size: 11px; transition: 0.2s; color: #d1d5db; text-transform: uppercase; }
         .tab-link:hover { background: #374151; }
         .tab-link.active { background: var(--cor-dup); font-weight: bold; border-left: 4px solid #fff; color: white; }
+       
+        /* Botão do Totem no Menu */
+        .tab-link-totem { background: var(--shopee-orange); border-left: 4px solid #ff7337; color: white; font-weight: bold;}
+        .tab-link-totem:hover { background: #d73d20; }
 
         .main-content { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
         .page { display: none; height: 100%; }
         .page.active { display: block; }
 
-        .header-status { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr 0.6fr 0.6fr 0.5fr 40px 0.8fr 0.8fr 80px; 
-            background: var(--cor-header); 
-            color: white; 
-            padding: 10px; 
-            text-align: center; 
-            font-weight: bold; 
-            border-radius: 4px; 
-            margin-bottom: 10px; 
+        .header-status {
+            display: grid;
+            grid-template-columns: 1fr 1fr 0.6fr 0.6fr 0.5fr 40px 0.8fr 0.8fr 80px;
+            background: var(--cor-header);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-bottom: 10px;
             align-items: center;
             gap: 5px;
         }
         .header-label { font-size: 10px; text-transform: uppercase; display: block; opacity: 0.8; margin-bottom: 2px; }
-        
+       
         .qr-container { background: white; padding: 3px; border-radius: 3px; display: flex; justify-content: center; align-items: center; }
         .qr-container img { width: 70px; height: 70px; }
 
-        .btn-dark-toggle {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            transition: 0.2s;
-        }
+        .btn-dark-toggle { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 4px; cursor: pointer; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s; }
         .btn-dark-toggle:hover { background: rgba(0,0,0,0.4); }
 
         .input-bar { display: flex; gap: 10px; margin-bottom: 15px; }
         .scan-box { flex: 1; padding: 15px; font-size: 22px; border: 3px solid #333; border-radius: 6px; outline: none; background: #fff; color: #000; }
-        
         body.dark-mode .scan-box { background: #374151; color: white; border-color: #4b5563; }
 
         .layout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 15px; align-items: start; }
@@ -96,13 +92,75 @@
         .row-backlog { background-color: var(--cor-backlog) !important; color: black; }
         .row-duplicado { background-color: var(--cor-dup) !important; color: white; }
         .row-outrarota { background-color: var(--cor-rota) !important; color: white; }
-        
+       
         .btn { padding: 8px 3px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; transition: 0.2s; text-transform: uppercase; font-size: 9px; }
-        
+       
         #faltas-list { color: #ef4444; }
         body.dark-mode #faltas-list { color: #f87171; }
-        
-        .card-master { background: var(--bg-card); padding: 25px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+       
+        .card-master { background: var(--bg-card); padding: 25px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+
+        /* Estilização Exclusiva do Totem - Shopee UI */
+        .shopee-header {
+            background-color: var(--shopee-orange);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .shopee-logo {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .shopee-logo span {
+            font-weight: 300;
+            font-size: 22px;
+            border-left: 2px solid rgba(255,255,255,0.4);
+            padding-left: 10px;
+        }
+        .shopee-card {
+            background: var(--bg-card);
+            max-width: 650px;
+            margin: 40px auto;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+        }
+        .shopee-input {
+            width: 100%;
+            height: 70px;
+            font-size: 28px;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+            transition: 0.3s;
+            background: var(--bg-body);
+            color: var(--text-main);
+            text-align: center;
+        }
+        .shopee-input:focus {
+            border-color: var(--shopee-orange);
+            box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.1);
+        }
+        .shopee-label {
+            font-weight: bold;
+            display: block;
+            text-align: left;
+            margin-bottom: 8px;
+            opacity: 0.7;
+            font-family: Arial, sans-serif;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -110,25 +168,72 @@
     <div class="sidebar" id="sidebar">
         <h2>SISTEMA SPX CLOUD</h2>
         <span class="url-tag">OPERAÇÃO CENTRALIZADA</span>
-        <div class="tab-link active" onclick="switchTab('master')">⚙️ DELIVERY ASSIGNMENT</div>
-    </div>
+        <div class="tab-link active" id="link-master" onclick="switchTab('master')"> DELIVERY ASSIGNMENT</div>
+        <div class="tab-link tab-link-totem" onclick="abrirTotemNovaAba()"> TOTEM CHECK (NOVA ABA) 🡕</div>
+        <hr style="border-color: #374151; margin: 10px 0;">
+        </div>
 
     <div class="main-content" id="mainContent">
+       
         <div id="page-master" class="page active">
             <h1 style="margin-top:0;">Gestão Centralizada</h1>
+           
             <div class="card-master">
-                <label style="font-weight:bold;">1. Importar Planilha Mestre:</label><br><br>
+                <label style="font-weight:bold; font-size: 18px; color: var(--cor-dup);">1. Importar Planilha Mestre (Pedidos e Rotas):</label><br><br>
                 <input type="file" id="fileInput" accept=".xlsx, .xls"><br><br>
+                <p id="infoBase" style="font-weight: bold; color: #1d4ed8; font-size: 14px;"></p>
                 <hr>
-                <label style="font-weight:bold;">2. Controles do Servidor:</label><br><br>
+               
+                <label style="font-weight:bold; font-size: 18px; color: var(--shopee-orange); margin-top: 15px; display: block;">2. Importar Planilha de Auditoria (Totem Check):</label>
+                <p style="font-size: 12px; margin-top: 0; opacity: 0.8;">O sistema buscará a Rota (Col B) e a Quantidade (Col D), ignorando o cabeçalho inicial.</p>
+                <input type="file" id="fileInputTotem" accept=".xlsx, .xls, .csv">
+                <br>
+                <button class="btn" style="background: var(--shopee-orange); padding: 10px 20px; margin-top: 15px; font-size: 12px; border-radius: 4px;" onclick="lerPlanilhaTotem()"> CARREGAR PLANILHA TOTEM</button>
+               
+                <p id="infoBaseTotem" style="font-weight: bold; color: var(--shopee-orange); font-size: 14px; margin-top: 15px;"></p>
+            </div>
+
+            <div class="card-master">
+                <label style="font-weight:bold;">Controles do Servidor:</label><br><br>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn" style="background:var(--cor-ok); padding: 10px 15px;" onclick="exportarPorPagina()">📥 BAIXAR RELATÓRIO GERAL</button>
-                    <button class="btn" style="background:var(--cor-reset); padding: 10px 15px;" onclick="limparApenasBase()">🗑️ LIMPAR PLANILHA MESTRE</button>
-                    <button class="btn" style="background:var(--cor-header); padding: 10px 15px;" onclick="limparBancoRemoto()">⚠️ LIMPAR TUDO (RESET TOTAL)</button>
+                    <button class="btn" style="background:var(--cor-ok); padding: 10px 15px; font-size: 11px;" onclick="exportarPorPagina()"> BAIXAR RELATÓRIO GERAL</button>
+                    <button class="btn" style="background:var(--cor-reset); padding: 10px 15px; font-size: 11px;" onclick="limparApenasBase()"> LIMPAR PLANILHA MESTRE</button>
+                    <button class="btn" style="background:var(--cor-header); padding: 10px 15px; font-size: 11px;" onclick="limparBancoRemoto()"> LIMPAR TUDO (RESET TOTAL)</button>
                 </div>
-                <p id="infoBase" style="margin-top: 20px; font-weight: bold; color: #1d4ed8; font-size: 16px;"></p>
             </div>
         </div>
+
+        <div id="page-totem" class="page">
+           
+            <div class="shopee-header">
+                <h1 class="shopee-logo">Shopee <span>Xpress</span></h1>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <span style="font-size: 18px; font-weight: bold; letter-spacing: 1px;">TOTEM DE AUDITORIA</span>
+                    <button class="btn-dark-toggle" onclick="toggleDarkModeTotem()" title="Alternar Tema" style="background: rgba(255,255,255,0.2); border: none; width: 45px;"><span class="dark-icon">☀️</span></button>
+                </div>
+            </div>
+           
+            <div class="shopee-card">
+                <div style="display: flex; flex-direction: column; gap: 25px;">
+                    <div>
+                        <label class="shopee-label">CÓDIGO DA ROTA</label>
+                        <input type="text" class="shopee-input" id="totemRota" placeholder="Bipe ou Digite a Rota" autocomplete="off" style="text-transform: uppercase;">
+                    </div>
+                    <div>
+                        <label class="shopee-label">VOLUME CONTADO TÁTIL</label>
+                        <input type="number" class="shopee-input" id="totemQtd" placeholder="Digite a Quantidade (Enter)" autocomplete="off">
+                    </div>
+                </div>
+
+                <div id="totemResultado" style="margin-top: 30px; padding: 25px; font-size: 36px; font-weight: bold; border-radius: 8px; text-align: center; display: none;"></div>
+               
+                <div id="totemQrContainer" style="margin-top: 30px; background: transparent; display: none; flex-direction: column; align-items: center;">
+                    <span style="font-weight: bold; margin-bottom: 10px; color: var(--cor-ok); font-size: 18px;">✅ CARGA LIBERADA</span>
+                    <img id="qr-totem" src="" style="width: 250px; height: 250px; border-radius: 10px; background: white; padding: 10px; border: 4px solid var(--cor-ok);">
+                </div>
+            </div>
+        </div>
+
     </div>
 
 <script>
@@ -146,15 +251,22 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let baseGeral = {}; 
-    let paginasData = {}; 
+    let baseGeral = {};
+    let baseTotem = {};
+    let paginasData = {};
     const TOTAL_PAGINAS = 100;
 
-    // Função Tema Escuro
+    // Função Tema Escuro com Sol ☀️ e Lua 🌙
     function toggleDarkMode() {
         const isDark = document.body.classList.toggle('dark-mode');
         localStorage.setItem('darkMode', isDark);
         updateDarkIcons();
+        atualizarCorFundoTotem();
+    }
+   
+    // Função específica para o botão do Totem não bugar o fundo
+    function toggleDarkModeTotem() {
+        toggleDarkMode();
     }
 
     function updateDarkIcons() {
@@ -163,25 +275,64 @@
         icons.forEach(icon => icon.innerText = isDark ? '☀️' : '🌙');
     }
 
+    // Adapta o fundo geral se estiver na aba do totem
+    function atualizarCorFundoTotem() {
+        if (window.location.hash === '#totem') {
+            const isDark = document.body.classList.contains('dark-mode');
+            document.body.style.background = isDark ? 'var(--shopee-bg)' : '#f5f5f5';
+        }
+    }
+
+    // Leitura do Banco de Dados - Mestre (Escuta nuvem)
     db.ref("operacao/base").on("value", (snapshot) => {
-        baseGeral = snapshot.val() || {};
-        document.getElementById('infoBase').innerText = Object.keys(baseGeral).length > 0 ? 
-            "✅ " + Object.keys(baseGeral).length + " pedidos carregados." : "⚠️ Nenhuma planilha carregada.";
+        const data = snapshot.val();
+        if (data) {
+            baseGeral = data;
+            const infoBase = document.getElementById('infoBase');
+            if(infoBase) {
+                infoBase.innerText = " " + Object.keys(baseGeral).length + " pedidos carregados.";
+            }
+        }
         db.ref("operacao/bips").once("value", (snapBips) => reprocessarDadosRemotos(snapBips.val() || {}));
+    });
+
+    // Leitura do Banco de Dados - Totem (Escuta nuvem)
+    db.ref("operacao/basetotem").on("value", (snapshot) => {
+        const data = snapshot.val();
+        if(data) {
+            baseTotem = data;
+            const rotasTotem = Object.keys(baseTotem).length;
+            const infoBaseTotem = document.getElementById('infoBaseTotem');
+            if(infoBaseTotem) {
+                infoBaseTotem.innerText = " " + rotasTotem + " rotas carregadas para auditoria.";
+            }
+        }
     });
 
     db.ref("operacao/bips").on("value", (snapshot) => reprocessarDadosRemotos(snapshot.val() || {}));
 
     function init() {
+        if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+        updateDarkIcons();
+
+        // LÓGICA DE SEPARAÇÃO DO TOTEM: (Transforma a tela em App Shopee)
+        if (window.location.hash === '#totem') {
+            document.getElementById('sidebar').style.display = 'none';
+            document.getElementById('page-master').classList.remove('active');
+            document.getElementById('page-totem').classList.add('active');
+            document.getElementById('mainContent').style.padding = '0'; // Remove o padding padrão para o header colar no topo
+            atualizarCorFundoTotem();
+           
+            setTimeout(() => document.getElementById('totemRota').focus(), 300);
+            return;
+        }
+
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');
-        
-        if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
-
+       
         for (let i = 1; i <= TOTAL_PAGINAS; i++) {
             paginasData[i] = { at: null, rota: null, total: 0, bips: [] };
-            
-            // QR Code inicial (Vazio) usando a API qrserver
+           
             const qrUrlVazio = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=VAZIO`;
 
             const btn = document.createElement('div');
@@ -201,9 +352,9 @@
                     <div><span class="header-label">Sist.</span><span id="qs-${i}">0</span></div>
                     <div><span class="header-label">Bip</span><span id="qb-${i}">0</span></div>
                     <div><span class="header-label">Faltas</span><span id="ft-${i}">0</span></div>
-                    <button class="btn-dark-toggle" onclick="toggleDarkMode()" title="Alternar Tema"><span class="dark-icon">🌙</span></button>
-                    <div><button class="btn" style="background:var(--cor-copy); width: 100%;" onclick="copiarBrsCorretas(${i})">📋 COPIAR</button></div>
-                    <div><button class="btn" style="background:var(--cor-reset); width: 100%;" onclick="limparPaginaEspecifica(${i})">🔄 RESET</button></div>
+                    <button class="btn-dark-toggle" onclick="toggleDarkMode()" title="Alternar Tema"><span class="dark-icon"></span></button>
+                    <div><button class="btn" style="background:var(--cor-copy); width: 100%;" onclick="copiarBrsCorretas(${i})"> COPIAR</button></div>
+                    <div><button class="btn" style="background:var(--cor-reset); width: 100%;" onclick="limparPaginaEspecifica(${i})"> RESET</button></div>
                     <div class="qr-container"><img id="qr-img-${i}" src="${qrUrlVazio}" title="Aguardando Atribuição"></div>
                 </div>
                 <div class="input-bar"><input type="text" class="scan-box" id="input-${i}" placeholder="Bipe aqui..." onkeypress="handleScan(event, ${i})"></div>
@@ -228,12 +379,12 @@
         updateDarkIcons();
     }
 
-    function copiarBrsCorretas(idx) {
-        const corretas = paginasData[idx].bips.filter(b => b.classe === "row-ok").map(b => b.br);
-        if (corretas.length === 0) return alert("Nada para copiar.");
-        navigator.clipboard.writeText(corretas.join('\n')).then(() => alert(`${corretas.length} BRs copiadas!`));
+    function abrirTotemNovaAba() {
+        const baseUrl = window.location.href.split('#')[0];
+        window.open(baseUrl + '#totem', '_blank');
     }
 
+    // LÓGICA DE IMPORTAÇÃO MESTRE - Atualizada para Offline
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -241,17 +392,160 @@
             const workbook = XLSX.read(data, { type: 'array' });
             const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
             const tempBase = {};
+            let count = 0;
+           
             json.forEach(row => {
                 const br = String(row['SPX tracking num'] || row['Pedidos'] || row['Tracking Number'] || '').trim();
                 const rotaID = row['Corridor-Cage/Route'] || row['Cluster'] || row['Route Number'] || '---';
-                if(br) tempBase[br] = { at: row['Task ID'] || row['Atribuição'] || '---', rota: rotaID };
+                if(br) {
+                    tempBase[br] = { at: row['Task ID'] || row['Atribuição'] || '---', rota: rotaID };
+                    count++;
+                }
             });
+           
+            baseGeral = tempBase;
+            const infoBase = document.getElementById('infoBase');
+            if(infoBase) infoBase.innerText = " " + count + " pedidos carregados.";
+           
             db.ref("operacao/base").set(tempBase);
-            alert("Base carregada!");
+            alert(`Sucesso! ${count} pedidos da Base Mestre foram carregados no sistema.`);
+            this.value = '';
         };
         reader.readAsArrayBuffer(e.target.files[0]);
     });
 
+    // LÓGICA DE IMPORTAÇÃO TOTEM - À PROVA DE FALHAS (CSV e XLS) E IGNORANDO LINHA 1
+    function lerPlanilhaTotem() {
+        const fileInput = document.getElementById('fileInputTotem');
+        if (!fileInput.files.length) {
+            alert("Por favor, selecione o arquivo do Totem Check primeiro.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+               
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 'A', defval: ""});
+                const tempBaseTotem = {};
+                let count = 0;
+               
+                // Ignora a linha 1 (Cabeçalho B1, D1)
+                for (let i = 1; i < json.length; i++) {
+                    const row = json[i];
+                   
+                    let rota = row['B'] ? row['B'].toString().trim().toUpperCase() : '';
+                    let qtd = row['D'] ? row['D'].toString().trim() : '';
+                   
+                    // FALLBACK CSV
+                    if (!rota && row['A'] && typeof row['A'] === 'string') {
+                        let separador = row['A'].includes(';') ? ';' : (row['A'].includes(',') ? ',' : null);
+                        if (separador) {
+                            const partes = row['A'].split(separador);
+                            rota = partes[1] ? partes[1].trim().toUpperCase() : '';
+                            qtd = partes[3] ? partes[3].trim() : '';
+                        }
+                    }
+
+                    if (rota && qtd) {
+                        rota = rota.replace(/^"|"$/g, '');
+                        qtd = qtd.replace(/^"|"$/g, '');
+                       
+                        tempBaseTotem[rota] = qtd;
+                        count++;
+                    }
+                }
+
+                if (count === 0) {
+                    alert("Atenção: Nenhuma informação foi lida.\nO sistema buscou a Rota na Coluna B e a Quantidade na Coluna D (começando da linha 2).\nVerifique se os dados não estão em colunas diferentes ou se a planilha está vazia.");
+                    return;
+                }
+               
+                baseTotem = tempBaseTotem;
+                const infoBaseTotem = document.getElementById('infoBaseTotem');
+                if(infoBaseTotem) infoBaseTotem.innerText = " " + count + " rotas carregadas para auditoria (B2 e D2 em diante).";
+               
+                // Salva no banco da Shopee/Totem no Firebase
+                db.ref("operacao/basetotem").set(tempBaseTotem);
+               
+                alert(`Sucesso! ${count} rotas carregadas perfeitamente. Você já pode abrir a nova aba do Totem Check.`);
+                fileInput.value = '';
+
+            } catch (error) {
+                console.error("Erro na leitura:", error);
+                alert("Erro ao ler o arquivo CSV. Verifique se o arquivo não está corrompido.");
+            }
+        };
+        reader.readAsArrayBuffer(fileInput.files[0]);
+    }
+
+    // CONTROLES DO TOTEM CHECK
+    document.getElementById('totemRota').addEventListener('keypress', function(e) {
+        if(e.key === 'Enter') {
+            e.preventDefault();
+            const rota = this.value.trim();
+            if(rota) document.getElementById('totemQtd').focus();
+        }
+    });
+
+    document.getElementById('totemQtd').addEventListener('keypress', function(e) {
+        if(e.key === 'Enter') {
+            e.preventDefault();
+            verificarTotem();
+        }
+    });
+
+    function verificarTotem() {
+        const rota = document.getElementById('totemRota').value.trim().toUpperCase();
+        const qtdContada = document.getElementById('totemQtd').value.trim();
+        const resDiv = document.getElementById('totemResultado');
+        const qrContainer = document.getElementById('totemQrContainer');
+        const qrImg = document.getElementById('qr-totem');
+
+        if(!rota || !qtdContada) return;
+
+        if(!baseTotem.hasOwnProperty(rota)) {
+            resDiv.style.display = 'block';
+            resDiv.style.background = 'var(--cor-backlog)'; // Amarelo Shopee erro
+            resDiv.style.color = '#000';
+            resDiv.innerText = "ROTA NÃO ENCONTRADA NA PLANILHA";
+            qrContainer.style.display = 'none';
+           
+            document.getElementById('totemRota').value = '';
+            document.getElementById('totemRota').focus();
+            return;
+        }
+
+        const qtdEsperada = baseTotem[rota];
+
+        if(qtdContada === qtdEsperada) {
+            resDiv.style.display = 'block';
+            resDiv.style.background = 'var(--cor-ok)'; // Verde Sucesso
+            resDiv.style.color = '#fff';
+            resDiv.innerText = "CONTAGEM CORRETA";
+           
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=LIBERADO_${encodeURIComponent(rota)}`;
+            qrContainer.style.display = 'flex';
+
+            document.getElementById('totemRota').value = '';
+            document.getElementById('totemQtd').value = '';
+            document.getElementById('totemRota').focus();
+
+        } else {
+            resDiv.style.display = 'block';
+            resDiv.style.background = 'var(--cor-header)'; // Vermelho Erro
+            resDiv.style.color = '#fff';
+            resDiv.innerText = "CONTAR NOVAMENTE";
+            qrContainer.style.display = 'none';
+
+            document.getElementById('totemQtd').value = '';
+            document.getElementById('totemQtd').focus();
+        }
+    }
+
+    // LÓGICA DAS PÁGINAS NORMAIS DE BIP
     function handleScan(event, idx) {
         if (event.key === 'Enter') {
             const br = event.target.value.trim();
@@ -268,7 +562,7 @@
             pag.bips = [];
             pag.at = null;
             const listaBips = Object.values(bipsRemotos).sort((a,b) => a.ts - b.ts);
-            
+           
             listaBips.forEach(b => {
                 const item = baseGeral[b.br];
                 if (!pag.at && item) { pag.at = item.at; pag.rota = item.rota; }
@@ -278,7 +572,7 @@
                 const item = baseGeral[b.br];
                 let status = "row-ok", obs = "OK", stText = "CORRETA", rota = item ? item.rota : "N/A";
                 const contagem = listaBips.filter(x => x.br === b.br).length;
-                if (contagem > 1) { status = "row-duplicado"; obs = "Duplicidade"; stText = "DUPLICADO"; } 
+                if (contagem > 1) { status = "row-duplicado"; obs = "Duplicidade"; stText = "DUPLICADO"; }
                 else if (!item) { status = "row-backlog"; obs = "Backlog"; stText = "INCORRETA"; }
                 else if (item.at !== pag.at) { status = "row-outrarota"; obs = "Outra Rota"; stText = "INCORRETA"; rota = item.rota; }
                 pag.bips.push({ br: b.br, obs, status: stText, classe: status, rota });
@@ -291,21 +585,20 @@
         const pag = paginasData[idx];
         const tbody = document.querySelector(`#table-${idx} tbody`);
         const qrImg = document.getElementById(`qr-img-${idx}`);
-        
+       
         if(!tbody) return;
         tbody.innerHTML = "";
         document.getElementById(`err-back-${idx}`).innerHTML = "";
         document.getElementById(`err-rot-${idx}`).innerHTML = "";
         document.getElementById(`err-dup-${idx}`).innerHTML = "";
-        
+       
         if (pag.at) {
             pag.total = Object.values(baseGeral).filter(v => v.at === pag.at).length;
             document.getElementById(`at-${idx}`).innerText = pag.at;
             document.getElementById(`rt-${idx}`).innerText = pag.rota;
             document.getElementById(`qs-${idx}`).innerText = pag.total;
             document.getElementById(`label-${idx}`).innerText = pag.rota;
-            
-            // Atualiza o QR Code com a Atribuição detectada
+           
             qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pag.at)}`;
             qrImg.title = `QR Code Atribuição: ${pag.at}`;
         } else {
@@ -313,8 +606,7 @@
             document.getElementById(`rt-${idx}`).innerText = "---";
             document.getElementById(`qs-${idx}`).innerText = "0";
             document.getElementById(`label-${idx}`).innerText = "Vazia";
-            
-            // Retorna o QR Code para Vazio se a página for resetada
+           
             qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=VAZIO`;
             qrImg.title = `Aguardando Atribuição`;
         }
@@ -326,7 +618,7 @@
             if (b.classe === "row-outrarota") if(!document.getElementById(`err-rot-${idx}`).innerText.includes(b.br)) document.getElementById(`err-rot-${idx}`).innerHTML += `<div>${b.br}</div>`;
             if (b.classe === "row-duplicado") if(!document.getElementById(`err-dup-${idx}`).innerText.includes(b.br)) document.getElementById(`err-dup-${idx}`).innerHTML += `<div>${b.br}</div>`;
         });
-        
+       
         const okCount = pag.bips.filter(b => b.classe === "row-ok").length;
         document.getElementById(`qb-${idx}`).innerText = okCount;
         document.getElementById(`ft-${idx}`).innerText = (pag.total || 0) - okCount;
@@ -334,9 +626,15 @@
         document.getElementById(`faltas-${idx}`).innerHTML = faltantes.map(f => `<div>${f}</div>`).join('');
     }
 
+    function copiarBrsCorretas(idx) {
+        const corretas = paginasData[idx].bips.filter(b => b.classe === "row-ok").map(b => b.br);
+        if (corretas.length === 0) return alert("Nada para copiar.");
+        navigator.clipboard.writeText(corretas.join('\n')).then(() => alert(`${corretas.length} BRs copiadas!`));
+    }
+
     function limparPaginaEspecifica(idx) { if(confirm("Limpar bips?")) db.ref(`operacao/bips/p${idx}`).remove(); }
-    function limparApenasBase() { if(confirm("Apagar Planilha?")) db.ref("operacao/base").remove(); }
-    function limparBancoRemoto() { if(confirm("RESET TOTAL?")) { db.ref("operacao").remove(); location.reload(); } }
+    function limparApenasBase() { if(confirm("Apagar Planilha Mestre?")) db.ref("operacao/base").remove(); }
+    function limparBancoRemoto() { if(confirm("RESET TOTAL (Bips e Bases)?")) { db.ref("operacao").remove(); location.reload(); } }
 
     function exportarPorPagina() {
         const wb = XLSX.utils.book_new();
@@ -350,19 +648,23 @@
             }
         }
         if (temDados) XLSX.writeFile(wb, `Relatorio_SPX.xlsx`);
+        else alert("Não há dados para exportar.");
     }
 
+    // NAVEGAÇÃO DE ABAS
     function switchTab(id) {
         document.querySelectorAll('.page, .tab-link').forEach(el => el.classList.remove('active'));
+       
         if(id === 'master') {
             document.getElementById('page-master').classList.add('active');
-            document.querySelectorAll('.tab-link')[0].classList.add('active');
+            document.getElementById('link-master').classList.add('active');
         } else {
             document.getElementById(`page-${id}`).classList.add('active');
             document.getElementById(`link-${id}`).classList.add('active');
             setTimeout(() => document.getElementById(`input-${id}`).focus(), 100);
         }
     }
+   
     window.onload = init;
 </script>
 </body>
