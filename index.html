@@ -1,50 +1,150 @@
-function init() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>SISTEMA SPX - CONTROLE TOTAL</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    // PEGA O LINK DO SITE E REMOVE PARÂMETROS ANTIGOS
-    let currentUrl = window.location.href.split('?')[0].split('#')[0];
-
-    for (let i = 1; i <= TOTAL_PAGINAS; i++) {
-        paginasData[i] = { at: null, rota: null, total: 0, bips: [] };
+    <style>
+        :root { 
+            --cor-header: #ef4444; 
+            --cor-ok: #22c55e; 
+            --cor-backlog: #facc15; 
+            --cor-dup: #1d4ed8; 
+            --cor-rota: #be123c; 
+            --cor-reset: #f97316;
+            --cor-copy: #6366f1;
+        }
+        body { font-family: 'Arial Narrow', Arial, sans-serif; margin: 0; background: #f3f4f6; display: flex; height: 100vh; overflow: hidden; }
         
-        // GERA O LINK QUE O CELULAR VAI ACESSAR
-        const linkParaCelular = `${currentUrl}?p=${i}`;
-        const qrUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(linkParaCelular)}`;
+        .sidebar { width: 220px; background: #1f2937; color: white; overflow-y: auto; flex-shrink: 0; border-right: 1px solid #111827; }
+        .sidebar h2 { font-size: 11px; padding: 15px 10px 5px; background: #111827; margin: 0; text-align: center; color: #9ca3af; letter-spacing: 1px; }
+        .sidebar .url-tag { font-size: 9px; color: #60a5fa; text-align: center; display: block; padding-bottom: 15px; background: #111827; border-bottom: 1px solid #374151; }
+        .tab-link { padding: 12px 15px; border-bottom: 1px solid #374151; cursor: pointer; font-size: 11px; transition: 0.2s; }
+        .tab-link:hover { background: #374151; }
+        .tab-link.active { background: var(--cor-dup); font-weight: bold; border-left: 4px solid #fff; }
 
-        const btn = document.createElement('div');
-        btn.className = 'tab-link';
-        btn.id = `link-${i}`;
-        btn.innerHTML = `PÁGINA ${i} <br><small id="label-${i}" style="opacity:0.6">Vazia</small>`;
-        btn.onclick = () => switchTab(i);
-        sidebar.appendChild(btn);
+        .main-content { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
+        .page { display: none; height: 100%; }
+        .page.active { display: block; }
 
-        const page = document.createElement('div');
-        page.className = 'page';
-        page.id = `page-${i}`;
-        page.innerHTML = `
-            <div class="header-status">
-                <div><span class="header-label">Atribuição</span><span id="at-${i}">---</span></div>
-                <div><span class="header-label">Rota</span><span id="rt-${i}">---</span></div>
-                <div><span class="header-label">Sistema</span><span id="qs-${i}">0</span></div>
-                <div><span class="header-label">Bipada</span><span id="qb-${i}">0</span></div>
-                <div><span class="header-label">Faltas</span><span id="ft-${i}">0</span></div>
-                <div><button class="btn" style="background:var(--cor-copy); width: 100%;" onclick="copiarBrsCorretas(${i})">📋 COPIAR BRs</button></div>
-                <div><button class="btn" style="background:var(--cor-reset); width: 100%;" onclick="limparPaginaEspecifica(${i})">🔄 RESET PÁG</button></div>
-                <div class="qr-container">
-                    <img src="${qrUrl}" alt="QR Code" style="background: white;">
+        .header-status { 
+            display: grid; 
+            /* Ajustado de 7 para 8 colunas para caber o QR Code */
+            grid-template-columns: 1.1fr 1.1fr 0.7fr 0.7fr 0.7fr 0.9fr 0.9fr 75px; 
+            background: var(--cor-header); 
+            color: white; 
+            padding: 12px; 
+            text-align: center; 
+            font-weight: bold; 
+            border-radius: 4px; 
+            margin-bottom: 10px; 
+            align-items: center;
+            gap: 5px;
+        }
+        .header-label { font-size: 11px; text-transform: uppercase; display: block; opacity: 0.8; margin-bottom: 3px; }
+
+        /* Estilo do QR Code */
+        .qr-code-box { background: white; padding: 3px; border-radius: 3px; display: flex; justify-content: center; align-items: center; }
+        .qr-code-box img { width: 65px; height: 65px; display: block; }
+
+        .input-bar { display: flex; gap: 10px; margin-bottom: 15px; }
+        .scan-box { flex: 1; padding: 15px; font-size: 22px; border: 3px solid #333; border-radius: 6px; outline: none; background: #fff; }
+        .scan-box:focus { border-color: var(--cor-dup); }
+
+        .layout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 15px; align-items: start; }
+        .main-table-container { background: white; border-radius: 4px; border: 1px solid #ccc; height: 60vh; overflow-y: auto; }
+        .main-table { width: 100%; border-collapse: collapse; }
+        .main-table th { background: #333; color: white; font-size: 12px; padding: 10px; position: sticky; top: 0; text-align: left; }
+        .main-table td { border-bottom: 1px solid #eee; padding: 8px 10px; font-size: 13px; font-weight: bold; }
+
+        .error-grid { display: grid; grid-template-columns: repeat(3, 1fr); background: #333; gap: 1px; border: 1px solid #333; border-radius: 4px; overflow: hidden; }
+        .error-header { color: white; padding: 8px; text-align: center; font-size: 10px; font-weight: bold; }
+        .error-list { background: white; height: 220px; overflow-y: auto; font-size: 11px; padding: 5px; font-weight: bold; }
+
+        .row-ok { background-color: var(--cor-ok) !important; color: white; }
+        .row-backlog { background-color: var(--cor-backlog) !important; color: black; }
+        .row-duplicado { background-color: var(--cor-dup) !important; color: white; }
+        .row-outrarota { background-color: var(--cor-rota) !important; color: white; }
+        
+        .btn { padding: 10px 5px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; transition: 0.2s; text-transform: uppercase; font-size: 9px; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <h2>SISTEMA SPX CLOUD</h2>
+        <span class="url-tag">OPERAÇÃO CENTRALIZADA</span>
+        <div class="tab-link active" onclick="switchTab('master')">⚙️ DELIVERY ASSIGNMENT</div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div id="page-master" class="page active">
+            <h1 style="margin-top:0; color:#1f2937;">Gestão Centralizada</h1>
+            <div style="background:white; padding:25px; border-radius:8px; border:1px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <label style="font-weight:bold;">1. Importar Planilha Mestre:</label><br><br>
+                <input type="file" id="fileInput" accept=".xlsx, .xls"><br><br>
+                <hr>
+                <label style="font-weight:bold;">2. Controles do Servidor:</label><br><br>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn" style="background:var(--cor-ok); padding: 10px 15px;" onclick="exportarPorPagina()">📥 BAIXAR RELATÓRIO GERAL</button>
+                    <button class="btn" style="background:var(--cor-reset); padding: 10px 15px;" onclick="limparApenasBase()">🗑️ LIMPAR PLANILHA MESTRE</button>
+                    <button class="btn" style="background:var(--cor-header); padding: 10px 15px;" onclick="limparBancoRemoto()">⚠️ LIMPAR TUDO (RESET TOTAL)</button>
                 </div>
+                <p id="infoBase" style="margin-top: 20px; font-weight: bold; color: #1d4ed8; font-size: 16px;"></p>
             </div>
-            `;
-        // Certifique-se de manter o restante do conteúdo interno (input-bar, layout-grid) igual ao anterior
-        mainContent.appendChild(page);
-    }
-    
-    // Lógica para abrir a página vinda do QR Code
-    const urlParams = new URLSearchParams(window.location.search);
-    if(urlParams.has('p')) {
-        const paginaDestino = urlParams.get('p');
-        setTimeout(() => switchTab(paginaDestino), 500);
-    }
-}
+        </div>
+    </div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBXv0XRtZMGtrYKrBzHGm7o2G5rRO3yLcE",
+        authDomain: "conferencia-spx-ca6fa.firebaseapp.com",
+        databaseURL: "https://conferencia-spx-ca6fa-default-rtdb.firebaseio.com",
+        projectId: "conferencia-spx-ca6fa",
+        storageBucket: "conferencia-spx-ca6fa.firebasestorage.app",
+        messagingSenderId: "555299403713",
+        appId: "1:555299403713:web:a093d965b7d787c28ee140",
+        measurementId: "G-6L0LZ9BV48"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let baseGeral = {}; 
+    let paginasData = {}; 
+    const TOTAL_PAGINAS = 100;
+
+    db.ref("operacao/base").on("value", (snapshot) => {
+        baseGeral = snapshot.val() || {};
+        document.getElementById('infoBase').innerText = Object.keys(baseGeral).length > 0 ? 
+            "✅ " + Object.keys(baseGeral).length + " pedidos carregados na base." : "⚠️ Nenhuma planilha carregada.";
+        
+        db.ref("operacao/bips").once("value", (snapBips) => {
+            reprocessarDadosRemotos(snapBips.val() || {});
+        });
+    });
+
+    db.ref("operacao/bips").on("value", (snapshot) => {
+        reprocessarDadosRemotos(snapshot.val() || {});
+    });
+
+    function init() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        // Pega a URL base do site para gerar o QR Code correto
+        const currentUrl = window.location.href.split('?')[0].split('#')[0];
+
+        for (let i = 1; i <= TOTAL_PAGINAS; i++) {
+            paginasData[i] = { at: null, rota: null, total: 0, bips: [] };
+            
+            // Gerar link do QR Code para esta página específica
+            const qrUrl = `https://chart.googleapis.com/chart?chs=100x100&cht=qr&chl=${encodeURIComponent(currentUrl + '?p=' + i)}&choe=UTF-8`;
+
+            const btn = document.createElement('div');
+            btn.className = 'tab-link';
+            btn.id = `link-${i}`;
+            btn.innerHTML =
 conferencia - spx 2.html
