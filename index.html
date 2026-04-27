@@ -175,14 +175,14 @@
     function init() {
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');
-        const baseUrl = window.location.href.split('?')[0].split('#')[0];
         
-        // Aplicar preferência de tema
         if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
 
         for (let i = 1; i <= TOTAL_PAGINAS; i++) {
             paginasData[i] = { at: null, rota: null, total: 0, bips: [] };
-            const qrUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(baseUrl)}?p=${i}`;
+            
+            // QR Code inicial (Vazio) usando a API qrserver
+            const qrUrlVazio = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=VAZIO`;
 
             const btn = document.createElement('div');
             btn.className = 'tab-link';
@@ -204,7 +204,7 @@
                     <button class="btn-dark-toggle" onclick="toggleDarkMode()" title="Alternar Tema"><span class="dark-icon">🌙</span></button>
                     <div><button class="btn" style="background:var(--cor-copy); width: 100%;" onclick="copiarBrsCorretas(${i})">📋 COPIAR</button></div>
                     <div><button class="btn" style="background:var(--cor-reset); width: 100%;" onclick="limparPaginaEspecifica(${i})">🔄 RESET</button></div>
-                    <div class="qr-container"><img src="${qrUrl}"></div>
+                    <div class="qr-container"><img id="qr-img-${i}" src="${qrUrlVazio}" title="Aguardando Atribuição"></div>
                 </div>
                 <div class="input-bar"><input type="text" class="scan-box" id="input-${i}" placeholder="Bipe aqui..." onkeypress="handleScan(event, ${i})"></div>
                 <div class="layout-grid">
@@ -226,11 +226,8 @@
             mainContent.appendChild(page);
         }
         updateDarkIcons();
-        const urlParams = new URLSearchParams(window.location.search);
-        if(urlParams.has('p')) switchTab(urlParams.get('p'));
     }
 
-    // --- REUTILIZANDO FUNÇÕES DE LOGICA ANTERIORES ---
     function copiarBrsCorretas(idx) {
         const corretas = paginasData[idx].bips.filter(b => b.classe === "row-ok").map(b => b.br);
         if (corretas.length === 0) return alert("Nada para copiar.");
@@ -271,10 +268,12 @@
             pag.bips = [];
             pag.at = null;
             const listaBips = Object.values(bipsRemotos).sort((a,b) => a.ts - b.ts);
+            
             listaBips.forEach(b => {
                 const item = baseGeral[b.br];
                 if (!pag.at && item) { pag.at = item.at; pag.rota = item.rota; }
             });
+
             listaBips.forEach(b => {
                 const item = baseGeral[b.br];
                 let status = "row-ok", obs = "OK", stText = "CORRETA", rota = item ? item.rota : "N/A";
@@ -291,18 +290,35 @@
     function renderizarPagina(idx) {
         const pag = paginasData[idx];
         const tbody = document.querySelector(`#table-${idx} tbody`);
+        const qrImg = document.getElementById(`qr-img-${idx}`);
+        
         if(!tbody) return;
         tbody.innerHTML = "";
         document.getElementById(`err-back-${idx}`).innerHTML = "";
         document.getElementById(`err-rot-${idx}`).innerHTML = "";
         document.getElementById(`err-dup-${idx}`).innerHTML = "";
+        
         if (pag.at) {
             pag.total = Object.values(baseGeral).filter(v => v.at === pag.at).length;
             document.getElementById(`at-${idx}`).innerText = pag.at;
             document.getElementById(`rt-${idx}`).innerText = pag.rota;
             document.getElementById(`qs-${idx}`).innerText = pag.total;
             document.getElementById(`label-${idx}`).innerText = pag.rota;
+            
+            // Atualiza o QR Code com a Atribuição detectada
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pag.at)}`;
+            qrImg.title = `QR Code Atribuição: ${pag.at}`;
+        } else {
+            document.getElementById(`at-${idx}`).innerText = "---";
+            document.getElementById(`rt-${idx}`).innerText = "---";
+            document.getElementById(`qs-${idx}`).innerText = "0";
+            document.getElementById(`label-${idx}`).innerText = "Vazia";
+            
+            // Retorna o QR Code para Vazio se a página for resetada
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=VAZIO`;
+            qrImg.title = `Aguardando Atribuição`;
         }
+
         pag.bips.slice().reverse().forEach(b => {
             const row = tbody.insertRow(); row.className = b.classe;
             row.innerHTML = `<td>${b.br}</td><td>${b.obs}</td><td>${b.rota}</td><td>${b.status}</td>`;
@@ -310,6 +326,7 @@
             if (b.classe === "row-outrarota") if(!document.getElementById(`err-rot-${idx}`).innerText.includes(b.br)) document.getElementById(`err-rot-${idx}`).innerHTML += `<div>${b.br}</div>`;
             if (b.classe === "row-duplicado") if(!document.getElementById(`err-dup-${idx}`).innerText.includes(b.br)) document.getElementById(`err-dup-${idx}`).innerHTML += `<div>${b.br}</div>`;
         });
+        
         const okCount = pag.bips.filter(b => b.classe === "row-ok").length;
         document.getElementById(`qb-${idx}`).innerText = okCount;
         document.getElementById(`ft-${idx}`).innerText = (pag.total || 0) - okCount;
