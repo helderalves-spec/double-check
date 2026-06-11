@@ -384,7 +384,7 @@
         window.open(baseUrl + '#totem', '_blank');
     }
 
-    // ==================== SEÇÃO MODIFICADA CIRURGICAMENTE (IMPORTAÇÃO MESTRE COM SUPORTE A CSV) ====================
+    // LÓGICA DE IMPORTAÇÃO MESTRE COM MOTOR HÍBRIDO (CSV / XLSX)
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -393,8 +393,6 @@
         if(infoBase) infoBase.innerText = "⏳ Processando arquivo... Aguarde.";
 
         const reader = new FileReader();
-        
-        // Verifica se é um arquivo CSV pela extensão do nome
         const ext = file.name.split('.').pop().toLowerCase();
 
         if (ext === 'csv') {
@@ -410,7 +408,6 @@
                 const delimitador = cabecalhoLinha.includes(';') ? ';' : ',';
                 const cabecalhos = cabecalhoLinha.split(delimitador).map(c => c.trim().toLowerCase());
                 
-                // Mapeia os índices das colunas originais e tratadas
                 let colTracking = cabecalhos.findIndex(c => c.includes('spx tracking num') || c.includes('pedidos') || c.includes('tracking number'));
                 let colRota = cabecalhos.findIndex(c => c.includes('corridor-cage/route') || c.includes('cluster') || c.includes('route number') || c.includes('rota'));
                 let colAtrib = cabecalhos.findIndex(c => c.includes('task id') || c.includes('atribuição'));
@@ -423,11 +420,9 @@
 
                 const tempBase = {};
                 let count = 0;
-                
                 let cursorIndex = primeiraQuebra + 1;
                 let finalTexto = textoCompleto.length;
 
-                // Motor linear ultra rápido caractere por caractere
                 while (cursorIndex < finalTexto) {
                     let proximaQuebra = textoCompleto.indexOf('\n', cursorIndex);
                     if (proximaQuebra === -1) proximaQuebra = finalTexto;
@@ -459,7 +454,6 @@
             };
             reader.readAsText(file, "UTF-8");
         } else {
-            // Mantém a leitura padrão em Excel original para arquivos .xlsx e .xls
             reader.onload = (event) => {
                 const data = new Uint8Array(event.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
@@ -486,7 +480,6 @@
             reader.readAsArrayBuffer(file);
         }
     });
-    // ==================== FIM DA SEÇÃO MODIFICADA ====================
 
     // LÓGICA DE IMPORTAÇÃO TOTEM - À PROVA DE FALHAS (CSV e XLS) E IGNORANDO LINHA 1
     function lerPlanilhaTotem() {
@@ -506,14 +499,12 @@
                 const tempBaseTotem = {};
                 let count = 0;
                
-                // Ignora a linha 1 (Cabeçalho B1, D1)
                 for (let i = 1; i < json.length; i++) {
                     const row = json[i];
                    
                     let rota = row['B'] ? row['B'].toString().trim().toUpperCase() : '';
                     let qtd = row['D'] ? row['D'].toString().trim() : '';
                    
-                    // FALLBACK CSV
                     if (!rota && row['A'] && typeof row['A'] === 'string') {
                         let separador = row['A'].includes(';') ? ';' : (row['A'].includes(',') ? ',' : null);
                         if (separador) {
@@ -533,7 +524,7 @@
                 }
 
                 if (count === 0) {
-                    alert("Atenção: Nenhuma informação foi lida.\nO sistema buscou a Rota na Coluna B e a Quantidade na Coluna D (começando da linha 2).\nVerifique se os dados não estão em colunas diferentes ou se a planilha está vazia.");
+                    alert("Atenção: Nenhuma informação foi lida.\nO sistema buscou a Rota na Coluna B e a Quantidade na Coluna D (começando da linha 2).");
                     return;
                 }
                
@@ -541,10 +532,8 @@
                 const infoBaseTotem = document.getElementById('infoBaseTotem');
                 if(infoBaseTotem) infoBaseTotem.innerText = " " + count + " rotas carregadas para auditoria (B2 e D2 em diante).";
                
-                // Salva no banco da Shopee/Totem no Firebase
                 db.ref("operacao/basetotem").set(tempBaseTotem);
-               
-                alert(`Sucesso! ${count} rotas carregadas perfeitamente. Você já pode abrir a nova aba do Totem Check.`);
+                alert(`Sucesso! ${count} rotas carregadas perfeitamente.`);
                 fileInput.value = '';
 
             } catch (error) {
@@ -582,7 +571,7 @@
 
         if(!baseTotem.hasOwnProperty(rota)) {
             resDiv.style.display = 'block';
-            resDiv.style.background = 'var(--cor-backlog)'; // Amarelo Shopee erro
+            resDiv.style.background = 'var(--cor-backlog)';
             resDiv.style.color = '#000';
             resDiv.innerText = "ROTA NÃO ENCONTRADA NA PLANILHA";
             qrContainer.style.display = 'none';
@@ -596,7 +585,7 @@
 
         if(qtdContada === qtdEsperada) {
             resDiv.style.display = 'block';
-            resDiv.style.background = 'var(--cor-ok)'; // Verde Sucesso
+            resDiv.style.background = 'var(--cor-ok)';
             resDiv.style.color = '#fff';
             resDiv.innerText = "CONTAGEM CORRETA";
            
@@ -609,7 +598,7 @@
 
         } else {
             resDiv.style.display = 'block';
-            resDiv.style.background = 'var(--cor-header)'; // Vermelho Erro
+            resDiv.style.background = 'var(--cor-header)';
             resDiv.style.color = '#fff';
             resDiv.innerText = "CONTAR NOVAMENTE";
             qrContainer.style.display = 'none';
@@ -619,11 +608,19 @@
         }
     }
 
-    // LÓGICA DAS PÁGINAS NORMAIS DE BIP
+    // LÓGICA DAS PÁGINAS NORMAIS DE BIP (MODIFICADA COM VALIDAÇÃO DE TAMANHO DE BR)
     function handleScan(event, idx) {
         if (event.key === 'Enter') {
             const br = event.target.value.trim();
             if (!br) return;
+
+            // NOVA ALTERAÇÃO: Se o comprimento for menor ou maior que 14 (Padrão de etiquetas Shopee), bloqueia e avisa
+            if (br.length !== 14) {
+                alert(`⚠️ CÓDIGO DE BARRAS INVÁLIDO!\nO código digitado possui ${br.length} dígitos.\nInsira uma etiqueta válida de exatamente 14 caracteres.`);
+                event.target.value = '';
+                return;
+            }
+
             db.ref(`operacao/bips/p${idx}`).push({ br: br, ts: Date.now() });
             event.target.value = '';
         }
@@ -693,7 +690,17 @@
             if (b.classe === "row-duplicado") if(!document.getElementById(`err-dup-${idx}`).innerText.includes(b.br)) document.getElementById(`err-dup-${idx}`).innerHTML += `<div>${b.br}</div>`;
         });
        
-        const okCount = pag.bips.filter(b => b.classe === "row-ok").length;
+        // MODIFICADO: Agora conta pacotes ÚNICOS bipados pertencentes à rota. 
+        // Se houver duplicidade, o primeiro registro do pacote continuará somando na contagem de conferidos da rota!
+        const pacotesUnicosBipadosDessaRota = new Set();
+        pag.bips.forEach(b => {
+            const itemOriginal = baseGeral[b.br];
+            if (itemOriginal && itemOriginal.at === pag.at) {
+                pacotesUnicosBipadosDessaRota.add(b.br);
+            }
+        });
+        const okCount = pacotesUnicosBipadosDessaRota.size;
+
         document.getElementById(`qb-${idx}`).innerText = okCount;
         document.getElementById(`ft-${idx}`).innerText = (pag.total || 0) - okCount;
         const faltantes = Object.keys(baseGeral).filter(k => baseGeral[k].at === pag.at && !pag.bips.some(b => b.br === k));
@@ -701,9 +708,10 @@
     }
 
     function copiarBrsCorretas(idx) {
-        const corretas = paginasData[idx].bips.filter(b => b.classe === "row-ok").map(b => b.br);
-        if (corretas.length === 0) return alert("Nada para copiar.");
-        navigator.clipboard.writeText(corretas.join('\n')).then(() => alert(`${corretas.length} BRs copiadas!`));
+        const corretas = paginasData[idx].bips.filter(b => b.classe === "row-ok" || b.classe === "row-duplicado").map(b => b.br);
+        const corretasUnicas = [...new Set(corretas)];
+        if (corretasUnicas.length === 0) return alert("Nada para copiar.");
+        navigator.clipboard.writeText(corretasUnicas.join('\n')).then(() => alert(`${corretasUnicas.length} BRs copiadas!`));
     }
 
     function limparPaginaEspecifica(idx) { if(confirm("Limpar bips?")) db.ref(`operacao/bips/p${idx}`).remove(); }
