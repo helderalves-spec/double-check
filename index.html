@@ -180,7 +180,7 @@
            
             <div class="card-master">
                 <label style="font-weight:bold; font-size: 18px; color: var(--cor-dup);">1. Importar Planilha Mestre (Pedidos e Rotas):</label><br><br>
-                <input type="file" id="fileInput" accept=".xlsx, .xls"><br><br>
+                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv"><br><br>
                 <p id="infoBase" style="font-weight: bold; color: #1d4ed8; font-size: 14px;"></p>
                 <hr>
                
@@ -384,35 +384,109 @@
         window.open(baseUrl + '#totem', '_blank');
     }
 
-    // LÓGICA DE IMPORTAÇÃO MESTRE - Atualizada para Offline
+    // ==================== SEÇÃO MODIFICADA CIRURGICAMENTE (IMPORTAÇÃO MESTRE COM SUPORTE A CSV) ====================
     document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const infoBase = document.getElementById('infoBase');
+        if(infoBase) infoBase.innerText = "⏳ Processando arquivo... Aguarde.";
+
         const reader = new FileReader();
-        reader.onload = (event) => {
-            const data = new Uint8Array(event.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-            const tempBase = {};
-            let count = 0;
-           
-            json.forEach(row => {
-                const br = String(row['SPX tracking num'] || row['Pedidos'] || row['Tracking Number'] || '').trim();
-                const rotaID = row['Corridor-Cage/Route'] || row['Cluster'] || row['Route Number'] || '---';
-                if(br) {
-                    tempBase[br] = { at: row['Task ID'] || row['Atribuição'] || '---', rota: rotaID };
-                    count++;
+        
+        // Verifica se é um arquivo CSV pela extensão do nome
+        const ext = file.name.split('.').pop().toLowerCase();
+
+        if (ext === 'csv') {
+            reader.onload = (event) => {
+                const textoCompleto = event.target.result;
+                const primeiraQuebra = textoCompleto.indexOf('\n');
+                if (primeiraQuebra === -1) {
+                    alert("O arquivo CSV está vazio ou inválido.");
+                    return;
                 }
-            });
-           
-            baseGeral = tempBase;
-            const infoBase = document.getElementById('infoBase');
-            if(infoBase) infoBase.innerText = " " + count + " pedidos carregados.";
-           
-            db.ref("operacao/base").set(tempBase);
-            alert(`Sucesso! ${count} pedidos da Base Mestre foram carregados no sistema.`);
-            this.value = '';
-        };
-        reader.readAsArrayBuffer(e.target.files[0]);
+                
+                const cabecalhoLinha = textoCompleto.substring(0, primeiraQuebra);
+                const delimitador = cabecalhoLinha.includes(';') ? ';' : ',';
+                const cabecalhos = cabecalhoLinha.split(delimitador).map(c => c.trim().toLowerCase());
+                
+                // Mapeia os índices das colunas originais e tratadas
+                let colTracking = cabecalhos.findIndex(c => c.includes('spx tracking num') || c.includes('pedidos') || c.includes('tracking number'));
+                let colRota = cabecalhos.findIndex(c => c.includes('corridor-cage/route') || c.includes('cluster') || c.includes('route number') || c.includes('rota'));
+                let colAtrib = cabecalhos.findIndex(c => c.includes('task id') || c.includes('atribuição'));
+
+                if (colTracking === -1) {
+                    alert("Coluna de rastreio ('SPX tracking num') não encontrada no CSV.");
+                    if(infoBase) infoBase.innerText = "❌ Falha na leitura do CSV.";
+                    return;
+                }
+
+                const tempBase = {};
+                let count = 0;
+                
+                let cursorIndex = primeiraQuebra + 1;
+                let finalTexto = textoCompleto.length;
+
+                // Motor linear ultra rápido caractere por caractere
+                while (cursorIndex < finalTexto) {
+                    let proximaQuebra = textoCompleto.indexOf('\n', cursorIndex);
+                    if (proximaQuebra === -1) proximaQuebra = finalTexto;
+                    
+                    let linhaStr = textoCompleto.substring(cursorIndex, proximaQuebra).trim();
+                    cursorIndex = proximaQuebra + 1;
+
+                    if (!linhaStr) continue;
+
+                    let colunas = linhaStr.split(delimitador);
+                    if (colunas[colTracking]) {
+                        let br = colunas[colTracking].replace(/^"|"$/g, '').trim();
+                        let rotaID = colRota !== -1 && colunas[colRota] ? colunas[colRota].replace(/^"|"$/g, '').trim() : '---';
+                        let atribID = colAtrib !== -1 && colunas[colAtrib] ? colunas[colAtrib].replace(/^"|"$/g, '').trim() : '---';
+                        
+                        if(br && br !== "NULL" && br !== "") {
+                            tempBase[br] = { at: atribID, rota: rotaID };
+                            count++;
+                        }
+                    }
+                }
+
+                baseGeral = tempBase;
+                if(infoBase) infoBase.innerText = " " + count + " pedidos carregados.";
+                
+                db.ref("operacao/base").set(tempBase);
+                alert(`Sucesso! ${count} pedidos da Base Mestre (CSV) foram carregados no sistema.`);
+                this.value = '';
+            };
+            reader.readAsText(file, "UTF-8");
+        } else {
+            // Mantém a leitura padrão em Excel original para arquivos .xlsx e .xls
+            reader.onload = (event) => {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                const tempBase = {};
+                let count = 0;
+               
+                json.forEach(row => {
+                    const br = String(row['SPX tracking num'] || row['Pedidos'] || row['Tracking Number'] || '').trim();
+                    const rotaID = row['Corridor-Cage/Route'] || row['Cluster'] || row['Route Number'] || '---';
+                    if(br) {
+                        tempBase[br] = { at: row['Task ID'] || row['Atribuição'] || '---', rota: rotaID };
+                        count++;
+                    }
+                });
+               
+                baseGeral = tempBase;
+                if(infoBase) infoBase.innerText = " " + count + " pedidos carregados.";
+               
+                db.ref("operacao/base").set(tempBase);
+                alert(`Sucesso! ${count} pedidos da Base Mestre (Excel) foram carregados no sistema.`);
+                this.value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        }
     });
+    // ==================== FIM DA SEÇÃO MODIFICADA ====================
 
     // LÓGICA DE IMPORTAÇÃO TOTEM - À PROVA DE FALHAS (CSV e XLS) E IGNORANDO LINHA 1
     function lerPlanilhaTotem() {
