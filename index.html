@@ -223,7 +223,6 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO COMPAT DO SEU FIREBASE ORIGINAL
         const firebaseConfig = {
             apiKey: "AIzaSyD4-kttLAn-QvxF7LIX-BMtTfCcz5HLnuk",
             authDomain: "erro-de-etiquetagem.firebaseapp.com",
@@ -246,12 +245,10 @@
         let contadorSessaoLocal = 0;
         let paginaMonitorAtiva = 1;
 
-        // Inicializa as estruturas das páginas
         for (let i = 1; i <= TOTAL_PAGINAS; i++) {
             paginasData[i] = { bips: [], mapeamentoCodigos: new Map() };
         }
 
-        // Restaura dados salvos localmente no navegador (Evita estouros no Firebase)
         function carregarDadosSalvosNavegador() {
             try {
                 const registrosSalvos = localStorage.getItem("spx_totem_base");
@@ -265,7 +262,6 @@
             } catch(e) { console.error(e); }
         }
 
-        // Sincronização em tempo real via Realtime Database para os bips
         db.ref("operacao/bips").on("value", (snapshot) => {
             bipsGlobaisNuvem = snapshot.val() || {};
             document.getElementById('cloud-status').innerHTML = "🟢 CLOUD ONLINE";
@@ -273,7 +269,6 @@
         });
 
         function reindexarBipsEAtualizar() {
-            // Limpa status anteriores
             for (let i = 1; i <= TOTAL_PAGINAS; i++) {
                 paginasData[i].bips.forEach(b => { b.status = "PENDENTE"; });
             }
@@ -294,7 +289,7 @@
             }
         }
 
-        // ALTERAÇÃO CRÍTICA AQUI: Mapeado para ler 'SPX tracking num' e processar mais de 20 mil linhas de forma ultra rápida
+        // ==================== SEÇÃO MODIFICADA CIRURGICAMENTE (LERARQUIVOCSV) ====================
         window.lerArquivoCSV = function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -312,7 +307,7 @@
                 
                 const cabecalhos = cabecalhoLinha.split(delimitador).map(c => c.trim().toLowerCase());
                 
-                // AJUSTADO: Agora procura corretamente por "spx tracking num" (como vem no seu CSV do sistema)
+                // Mapeamento correto com os nomes das colunas da planilha exportada (Shopee)
                 let colTracking = cabecalhos.findIndex(c => c.includes('spx tracking num') || c.includes('spx tracking number'));
                 let colRota = cabecalhos.findIndex(c => c.includes('corridor-cage/route') || c.includes('route') || c.includes('rota'));
 
@@ -326,7 +321,7 @@
                 let cursorIndex = primeiraQuebra + 1;
                 let finalTexto = textoCompleto.length;
 
-                // Loop linear de alta velocidade caractere por caractere (Evita o estouro de memória RAM)
+                // Processador linear ultra rápido caractere por caractere
                 while (cursorIndex < finalTexto) {
                     let proximaQuebra = textoCompleto.indexOf('\n', cursorIndex);
                     if (proximaQuebra === -1) proximaQuebra = finalTexto;
@@ -339,9 +334,9 @@
                     let colunas = linhaStr.split(delimitador);
                     if (colunas[colTracking]) {
                         let codigoBR = colunas[colTracking].trim().toUpperCase();
-                        let nomeRota = colRosa = colRota !== -1 && colunas[colRota] ? colunas[colRota].trim() : "Sem Rota";
+                        let nomeRota = colRota !== -1 && colunas[colRota] ? colunas[colRota].trim() : "Sem Rota";
                         
-                        if(codigoBR && codigoBR !== "NULL") {
+                        if(codigoBR && codigoBR !== "NULL" && codigoBR !== "") {
                             baseDeDadosMapeada.set(codigoBR, nomeRota);
                         }
                     }
@@ -361,9 +356,9 @@
 
             reader.readAsText(file, "UTF-8");
         };
+        // ==================== FIM DA SEÇÃO MODIFICADA ====================
 
         function distribuirCodigosNasPaginas() {
-            // Reseta paginas
             for (let i = 1; i <= TOTAL_PAGINAS; i++) {
                 paginasData[i] = { bips: [], mapeamentoCodigos: new Map() };
             }
@@ -402,7 +397,6 @@
                     statusOperacao = "DUPLICADO";
                 }
 
-                // Envia registro em tempo real para a nuvem
                 db.ref("operacao/bips/" + codigo).set({
                     rota: rotaIdentificada,
                     status: statusOperacao,
@@ -415,7 +409,6 @@
                 document.getElementById('kpi-totem-rota').innerText = rotaIdentificada;
                 document.getElementById('kpi-totem-status').innerText = statusOperacao;
 
-                // Adiciona na visualização rápida da tabela do totem
                 const tbody = document.querySelector("#tabela-sessao-recente tbody");
                 let classeBadge = statusOperacao === "OK" ? "bg-ok" : "bg-dup";
                 let novaLinha = `<tr>
@@ -491,7 +484,7 @@
             for (let i = 1; i <= TOTAL_PAGINAS; i++) {
                 if (paginasData[i].bips.length > 0) {
                     temDados = true;
-                    const wsData = [[\"PEDIDO\", \"ROTA\", \"STATUS\"]];
+                    const wsData = [["PEDIDO", "ROTA", "STATUS"]];
                     paginasData[i].bips.forEach(b => wsData.push([b.br, b.rota, b.status]));
                     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), `Página ${i}`);
                 }
