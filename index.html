@@ -256,7 +256,6 @@
     let paginasData = {};
     const TOTAL_PAGINAS = 100;
 
-    // Função Tema Escuro com Sol ☀️ e Lua 🌙
     function toggleDarkMode() {
         const isDark = document.body.classList.toggle('dark-mode');
         localStorage.setItem('darkMode', isDark);
@@ -264,7 +263,6 @@
         atualizarCorFundoTotem();
     }
    
-    // Função específica para o botão do Totem não bugar o fundo
     function toggleDarkModeTotem() {
         toggleDarkMode();
     }
@@ -275,7 +273,6 @@
         icons.forEach(icon => icon.innerText = isDark ? '☀️' : '🌙');
     }
 
-    // Adapta o fundo geral se estiver na aba do totem
     function atualizarCorFundoTotem() {
         if (window.location.hash === '#totem') {
             const isDark = document.body.classList.contains('dark-mode');
@@ -283,7 +280,6 @@
         }
     }
 
-    // Leitura do Banco de Dados - Mestre (Escuta nuvem)
     db.ref("operacao/base").on("value", (snapshot) => {
         const data = snapshot.val();
         if (data) {
@@ -296,7 +292,6 @@
         db.ref("operacao/bips").once("value", (snapBips) => reprocessarDadosRemotos(snapBips.val() || {}));
     });
 
-    // Leitura do Banco de Dados - Totem (Escuta nuvem)
     db.ref("operacao/basetotem").on("value", (snapshot) => {
         const data = snapshot.val();
         if(data) {
@@ -315,12 +310,11 @@
         if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
         updateDarkIcons();
 
-        // LÓGICA DE SEPARAÇÃO DO TOTEM: (Transforma a tela em App Shopee)
         if (window.location.hash === '#totem') {
             document.getElementById('sidebar').style.display = 'none';
             document.getElementById('page-master').classList.remove('active');
             document.getElementById('page-totem').classList.add('active');
-            document.getElementById('mainContent').style.padding = '0'; // Remove o padding padrão para o header colar no topo
+            document.getElementById('mainContent').style.padding = '0';
             atualizarCorFundoTotem();
            
             setTimeout(() => document.getElementById('totemRota').focus(), 300);
@@ -384,7 +378,6 @@
         window.open(baseUrl + '#totem', '_blank');
     }
 
-    // LÓGICA DE IMPORTAÇÃO MESTRE COM MOTOR HÍBRIDO (CSV / XLSX)
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -481,7 +474,6 @@
         }
     });
 
-    // LÓGICA DE IMPORTAÇÃO TOTEM - À PROVA DE FALHAS (CSV e XLS) E IGNORANDO LINHA 1
     function lerPlanilhaTotem() {
         const fileInput = document.getElementById('fileInputTotem');
         if (!fileInput.files.length) {
@@ -544,7 +536,6 @@
         reader.readAsArrayBuffer(fileInput.files[0]);
     }
 
-    // CONTROLES DO TOTEM CHECK
     document.getElementById('totemRota').addEventListener('keypress', function(e) {
         if(e.key === 'Enter') {
             e.preventDefault();
@@ -608,15 +599,14 @@
         }
     }
 
-    // LÓGICA DAS PÁGINAS NORMAIS DE BIP (MODIFICADA COM VALIDAÇÃO DE TAMANHO DE BR)
     function handleScan(event, idx) {
         if (event.key === 'Enter') {
             const br = event.target.value.trim();
             if (!br) return;
 
-            // NOVA ALTERAÇÃO: Se o comprimento for menor ou maior que 14 (Padrão de etiquetas Shopee), bloqueia e avisa
-            if (br.length !== 14) {
-                alert(`⚠️ CÓDIGO DE BARRAS INVÁLIDO!\nO código digitado possui ${br.length} dígitos.\nInsira uma etiqueta válida de exatamente 14 caracteres.`);
+            // MODIFICADO: Validação alterada cirurgicamente para exatamente 15 dígitos
+            if (br.length !== 15) {
+                alert(`⚠️ CÓDIGO DE BARRAS INVÁLIDO!\nO código digitado possui ${br.length} dígitos.\nInsira uma etiqueta válida de exatamente 15 caracteres.`);
                 event.target.value = '';
                 return;
             }
@@ -690,8 +680,6 @@
             if (b.classe === "row-duplicado") if(!document.getElementById(`err-dup-${idx}`).innerText.includes(b.br)) document.getElementById(`err-dup-${idx}`).innerHTML += `<div>${b.br}</div>`;
         });
        
-        // MODIFICADO: Agora conta pacotes ÚNICOS bipados pertencentes à rota. 
-        // Se houver duplicidade, o primeiro registro do pacote continuará somando na contagem de conferidos da rota!
         const pacotesUnicosBipadosDessaRota = new Set();
         pag.bips.forEach(b => {
             const itemOriginal = baseGeral[b.br];
@@ -733,7 +721,6 @@
         else alert("Não há dados para exportar.");
     }
 
-    // NAVEGAÇÃO DE ABAS
     function switchTab(id) {
         document.querySelectorAll('.page, .tab-link').forEach(el => el.classList.remove('active'));
        
