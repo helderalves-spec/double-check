@@ -24,520 +24,648 @@
             --bg-body: #f3f4f6;
             --bg-card: #ffffff;
             --text-main: #1f2937;
-            --text-muted: #4b5563;
-            --border-color: #e5e7eb;
+            --border-color: #ccc;
         }
 
+        /* Definições do Tema Escuro */
         body.dark-mode {
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
+            --bg-body: #111827;
+            --bg-card: #1f2937;
+            --text-main: #f3f4f6;
+            --border-color: #374151;
+            --shopee-bg: #121212; /* Fundo escuro para a página da Shopee */
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; transition: background 0.3s, color 0.3s; }
-        
-        /* SIDEBAR / SIDE MENU */
-        .sidebar { width: 260px; background: #111827; color: white; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
-        .brand { padding: 24px; background: var(--shopee-orange); font-size: 20px; font-weight: 800; text-align: center; letter-spacing: 1px; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .menu-sections { flex: 1; padding: 16px 0; overflow-y: auto; }
-        .menu-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; padding: 12px 24px 6px; font-weight: 700; }
-        .tab-link { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 24px; background: none; border: none; color: #d1d5db; text-align: left; font-size: 14px; cursor: pointer; border-left: 4px solid transparent; transition: all 0.2s; }
-        .tab-link:hover { background: #1f2937; color: white; }
-        .tab-link.active { background: #1f2937; border-left-color: var(--shopee-orange); color: var(--shopee-orange); font-weight: 600; }
-        
-        /* MAIN CONTENT */
-        .main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .top-navbar { height: 70px; background: var(--bg-card); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
-        .top-navbar h1 { font-size: 18px; font-weight: 700; }
-        .nav-controls { display: flex; align-items: center; gap: 16px; }
+        body { font-family: 'Arial Narrow', Arial, sans-serif; margin: 0; background: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; transition: background 0.3s; }
+       
+        .sidebar { width: 220px; background: #1f2937; color: white; overflow-y: auto; flex-shrink: 0; border-right: 1px solid #111827; }
+        .sidebar h2 { font-size: 11px; padding: 15px 10px 5px; background: #111827; margin: 0; text-align: center; color: #9ca3af; letter-spacing: 1px; }
+        .sidebar .url-tag { font-size: 9px; color: #60a5fa; text-align: center; display: block; padding-bottom: 15px; background: #111827; border-bottom: 1px solid #374151; }
+        .tab-link { padding: 12px 15px; border-bottom: 1px solid #374151; cursor: pointer; font-size: 11px; transition: 0.2s; color: #d1d5db; text-transform: uppercase; }
+        .tab-link:hover { background: #374151; }
+        .tab-link.active { background: var(--cor-dup); font-weight: bold; border-left: 4px solid #fff; color: white; }
+       
+        /* Botão do Totem no Menu */
+        .tab-link-totem { background: var(--shopee-orange); border-left: 4px solid #ff7337; color: white; font-weight: bold;}
+        .tab-link-totem:hover { background: #d73d20; }
 
-        .content-body { flex: 1; padding: 32px; overflow-y: auto; }
-        .page { display: none; }
-        .page.active { display: block; animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .main-content { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
+        .page { display: none; height: 100%; }
+        .page.active { display: block; }
 
-        /* CARDS / CONTAINERS */
-        .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .card-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+        .header-status {
+            display: grid;
+            grid-template-columns: 1fr 1fr 0.6fr 0.6fr 0.5fr 40px 0.8fr 0.8fr 80px;
+            background: var(--cor-header);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            align-items: center;
+            gap: 5px;
+        }
+        .header-label { font-size: 10px; text-transform: uppercase; display: block; opacity: 0.8; margin-bottom: 2px; }
+       
+        .qr-container { background: white; padding: 3px; border-radius: 3px; display: flex; justify-content: center; align-items: center; }
+        .qr-container img { width: 70px; height: 70px; }
 
-        /* GRID SISTEMA */
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
-        .kpi-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .kpi-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; }
-        .kpi-data { display: flex; flex-direction: column; }
-        .kpi-data .val { font-size: 24px; font-weight: 700; }
-        .kpi-data .lbl { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+        .btn-dark-toggle { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 4px; cursor: pointer; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s; }
+        .btn-dark-toggle:hover { background: rgba(0,0,0,0.4); }
 
-        /* COMPONENTES DE INPUT E BOTÕES */
-        .file-dropzone { border: 2px dashed #cbd5e1; border-radius: 8px; padding: 32px; text-align: center; cursor: pointer; background: rgba(243,244,246,0.5); transition: 0.2s; }
-        .file-dropzone:hover { border-color: var(--shopee-orange); background: rgba(238,77,45,0.02); }
-        .file-dropzone input { display: none; }
-        
-        .btn { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
-        .btn-primary { background: var(--shopee-orange); color: white; }
-        .btn-primary:hover { background: #d73f21; }
-        .btn-secondary { background: #9ca3af; color: white; }
-        .btn-secondary:hover { background: #818cf8; }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-danger:hover { background: #dc2626; }
-        .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
-        .btn-outline:hover { background: var(--border-color); }
+        .input-bar { display: flex; gap: 10px; margin-bottom: 15px; }
+        .scan-box { flex: 1; padding: 15px; font-size: 22px; border: 3px solid #333; border-radius: 6px; outline: none; background: #fff; color: #000; }
+        body.dark-mode .scan-box { background: #374151; color: white; border-color: #4b5563; }
 
-        .input-scan { width: 100%; padding: 16px; font-size: 22px; font-weight: 700; text-align: center; border: 2px solid var(--shopee-orange); border-radius: 8px; outline: none; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(238,77,45,0.05); }
+        .layout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 15px; align-items: start; }
+        .main-table-container { background: var(--bg-card); border-radius: 4px; border: 1px solid var(--border-color); height: 60vh; overflow-y: auto; }
+        .main-table { width: 100%; border-collapse: collapse; }
+        .main-table th { background: #333; color: white; font-size: 12px; padding: 10px; position: sticky; top: 0; text-align: left; }
+        .main-table td { border-bottom: 1px solid var(--border-color); padding: 8px 10px; font-size: 13px; font-weight: bold; }
 
-        /* TABELAS */
-        .table-responsive { width: 100%; overflow-x: auto; max-height: 400px; border: 1px solid var(--border-color); border-radius: 8px; }
-        .table-view { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; }
-        .table-view th { background: #f9fafb; color: var(--text-muted); padding: 12px; font-weight: 600; border-bottom: 2px solid var(--border-color); position: sticky; top: 0; }
-        body.dark-mode .table-view th { background: #1e293b; }
-        .table-view td { padding: 12px; border-bottom: 1px solid var(--border-color); }
-        .table-view tr:hover { background: rgba(0,0,0,0.01); }
+        .error-grid { display: grid; grid-template-columns: repeat(3, 1fr); background: #333; gap: 1px; border: 1px solid #333; border-radius: 4px; overflow: hidden; }
+        .error-header { color: white; padding: 8px; text-align: center; font-size: 10px; font-weight: bold; }
+        .error-list { background: var(--bg-card); height: 200px; overflow-y: auto; font-size: 11px; padding: 5px; font-weight: bold; color: var(--text-main); }
 
-        /* BADGES */
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; display: inline-block; }
-        .bg-ok { background: #dcfce7; color: #15803d; }
-        .bg-backlog { background: #fef9c3; color: #a16207; }
-        .bg-dup { background: #dbeafe; color: #1d4ed8; }
+        .row-ok { background-color: var(--cor-ok) !important; color: white; }
+        .row-backlog { background-color: var(--cor-backlog) !important; color: black; }
+        .row-duplicado { background-color: var(--cor-dup) !important; color: white; }
+        .row-outrarota { background-color: var(--cor-rota) !important; color: white; }
+       
+        .btn { padding: 8px 3px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; transition: 0.2s; text-transform: uppercase; font-size: 9px; }
+       
+        #faltas-list { color: #ef4444; }
+        body.dark-mode #faltas-list { color: #f87171; }
+       
+        .card-master { background: var(--bg-card); padding: 25px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
 
-        /* PAGINAÇÃO INTERNA DO MONITOR */
-        .pagination-container { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
-        .page-indicator-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0; }
-        .page-indicator-btn { padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 12px; font-weight: 600; cursor: pointer; }
-        .page-indicator-btn.active { background: var(--shopee-orange); color: white; border-color: var(--shopee-orange); }
-        .page-indicator-btn.has-data { border-bottom: 3px solid var(--cor-ok); }
-
-        /* SWITCH DARK MODE */
-        .theme-switch { cursor: pointer; padding: 8px; border-radius: 50%; background: var(--border-color); display: flex; align-items: center; justify-content: center; }
-
-        #cloud-status { padding: 12px 24px; font-size: 11px; font-weight: 700; text-align: center; background: #0b0f19; color: #9ca3af; letter-spacing: 0.5px; }
+        /* Estilização Exclusiva do Totem - Shopee UI */
+        .shopee-header {
+            background-color: var(--shopee-orange);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .shopee-logo {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .shopee-logo span {
+            font-weight: 300;
+            font-size: 22px;
+            border-left: 2px solid rgba(255,255,255,0.4);
+            padding-left: 10px;
+        }
+        .shopee-card {
+            background: var(--bg-card);
+            max-width: 650px;
+            margin: 40px auto;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+        }
+        .shopee-input {
+            width: 100%;
+            height: 70px;
+            font-size: 28px;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+            transition: 0.3s;
+            background: var(--bg-body);
+            color: var(--text-main);
+            text-align: center;
+        }
+        .shopee-input:focus {
+            border-color: var(--shopee-orange);
+            box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.1);
+        }
+        .shopee-label {
+            font-weight: bold;
+            display: block;
+            text-align: left;
+            margin-bottom: 8px;
+            opacity: 0.7;
+            font-family: Arial, sans-serif;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div>
-            <div class="brand">⚡ SPX SYSTEM</div>
-            <div class="menu-sections">
-                <div class="menu-section-title">Gerenciamento</div>
-                <button id="link-import" class="tab-link active" onclick="switchTab('import')">📥 1. Carregar Base</button>
-                <button id="link-totem" class="tab-link" onclick="switchTab('totem')">🔦 2. Estação de Bipagem</button>
-                
-                <div class="menu-section-title">Análise de Dados</div>
-                <button id="link-master" class="tab-link" onclick="switchTab('master')">📋 3. Monitor de Páginas 🔒</button>
+    <div class="sidebar" id="sidebar">
+        <h2>SISTEMA SPX CLOUD</h2>
+        <span class="url-tag">OPERAÇÃO CENTRALIZADA</span>
+        <div class="tab-link active" id="link-master" onclick="switchTab('master')"> DELIVERY ASSIGNMENT</div>
+        <div class="tab-link tab-link-totem" onclick="abrirTotemNovaAba()"> TOTEM CHECK (NOVA ABA) 🡕</div>
+        <hr style="border-color: #374151; margin: 10px 0;">
+        </div>
+
+    <div class="main-content" id="mainContent">
+       
+        <div id="page-master" class="page active">
+            <h1 style="margin-top:0;">Gestão Centralizada</h1>
+           
+            <div class="card-master">
+                <label style="font-weight:bold; font-size: 18px; color: var(--cor-dup);">1. Importar Planilha Mestre (Pedidos e Rotas):</label><br><br>
+                <input type="file" id="fileInput" accept=".xlsx, .xls"><br><br>
+                <p id="infoBase" style="font-weight: bold; color: #1d4ed8; font-size: 14px;"></p>
+                <hr>
+               
+                <label style="font-weight:bold; font-size: 18px; color: var(--shopee-orange); margin-top: 15px; display: block;">2. Importar Planilha de Auditoria (Totem Check):</label>
+                <p style="font-size: 12px; margin-top: 0; opacity: 0.8;">O sistema buscará a Rota (Col B) e a Quantidade (Col D), ignorando o cabeçalho inicial.</p>
+                <input type="file" id="fileInputTotem" accept=".xlsx, .xls, .csv">
+                <br>
+                <button class="btn" style="background: var(--shopee-orange); padding: 10px 20px; margin-top: 15px; font-size: 12px; border-radius: 4px;" onclick="lerPlanilhaTotem()"> CARREGAR PLANILHA TOTEM</button>
+               
+                <p id="infoBaseTotem" style="font-weight: bold; color: var(--shopee-orange); font-size: 14px; margin-top: 15px;"></p>
+            </div>
+
+            <div class="card-master">
+                <label style="font-weight:bold;">Controles do Servidor:</label><br><br>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn" style="background:var(--cor-ok); padding: 10px 15px; font-size: 11px;" onclick="exportarPorPagina()"> BAIXAR RELATÓRIO GERAL</button>
+                    <button class="btn" style="background:var(--cor-reset); padding: 10px 15px; font-size: 11px;" onclick="limparApenasBase()"> LIMPAR PLANILHA MESTRE</button>
+                    <button class="btn" style="background:var(--cor-header); padding: 10px 15px; font-size: 11px;" onclick="limparBancoRemoto()"> LIMPAR TUDO (RESET TOTAL)</button>
+                </div>
             </div>
         </div>
-        <div>
-            <div id="cloud-status">🔄 STATUS: CONECTANDO...</div>
+
+        <div id="page-totem" class="page">
+           
+            <div class="shopee-header">
+                <h1 class="shopee-logo">Shopee <span>Xpress</span></h1>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <span style="font-size: 18px; font-weight: bold; letter-spacing: 1px;">TOTEM DE AUDITORIA</span>
+                    <button class="btn-dark-toggle" onclick="toggleDarkModeTotem()" title="Alternar Tema" style="background: rgba(255,255,255,0.2); border: none; width: 45px;"><span class="dark-icon">☀️</span></button>
+                </div>
+            </div>
+           
+            <div class="shopee-card">
+                <div style="display: flex; flex-direction: column; gap: 25px;">
+                    <div>
+                        <label class="shopee-label">CÓDIGO DA ROTA</label>
+                        <input type="text" class="shopee-input" id="totemRota" placeholder="Bipe ou Digite a Rota" autocomplete="off" style="text-transform: uppercase;">
+                    </div>
+                    <div>
+                        <label class="shopee-label">VOLUME CONTADO TÁTIL</label>
+                        <input type="number" class="shopee-input" id="totemQtd" placeholder="Digite a Quantidade (Enter)" autocomplete="off">
+                    </div>
+                </div>
+
+                <div id="totemResultado" style="margin-top: 30px; padding: 25px; font-size: 36px; font-weight: bold; border-radius: 8px; text-align: center; display: none;"></div>
+               
+                <div id="totemQrContainer" style="margin-top: 30px; background: transparent; display: none; flex-direction: column; align-items: center;">
+                    <span style="font-weight: bold; margin-bottom: 10px; color: var(--cor-ok); font-size: 18px;">✅ CARGA LIBERADA</span>
+                    <img id="qr-totem" src="" style="width: 250px; height: 250px; border-radius: 10px; background: white; padding: 10px; border: 4px solid var(--cor-ok);">
+                </div>
+            </div>
         </div>
+
     </div>
 
-    <div class="main-container">
-        <div class="top-navbar">
-            <h1 id="navbar-title">Carregar Base Operacional</h1>
-            <div class="nav-controls">
-                <div class="theme-switch" onclick="toggleTheme()">🌓</div>
-                <button class="btn btn-outline" style="color:#ef4444; border-color:#fca5a5" onclick="limparBancoRemoto()">🚨 Reset Cloud</button>
-            </div>
-        </div>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBXv0XRtZMGtrYKrBzHGm7o2G5rRO3yLcE",
+        authDomain: "conferencia-spx-ca6fa.firebaseapp.com",
+        databaseURL: "https://conferencia-spx-ca6fa-default-rtdb.firebaseio.com",
+        projectId: "conferencia-spx-ca6fa",
+        storageBucket: "conferencia-spx-ca6fa.firebasestorage.app",
+        messagingSenderId: "555299403713",
+        appId: "1:555299403713:web:a093d965b7d787c28ee140",
+        measurementId: "G-6L0LZ9BV48"
+    };
 
-        <div class="content-body">
-            <div id="page-import" class="page active">
-                <div class="card">
-                    <div class="card-title">📥 Upload do arquivo CSV do Sistema</div>
-                    <label class="file-dropzone">
-                        <span>Clique para selecionar ou arraste o arquivo <strong>.csv</strong> aqui</span>
-                        <input type="file" id="csv-file" accept=".csv" onchange="lerArquivoCSV(event)">
-                    </label>
-                    <div id="import-msg" style="margin-top: 16px; font-weight: 600; color: var(--shopee-orange);"></div>
-                </div>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-                <div class="grid-3">
-                    <div class="kpi-card">
-                        <div class="kpi-icon" style="background:#3b82f6">📦</div>
-                        <div class="kpi-data"><span class="val" id="kpi-total-base">0</span><span class="lbl">Total de Pedidos Carregados</span></div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-icon" style="background:var(--cor-ok)">✅</div>
-                        <div class="kpi-data"><span class="val" id="kpi-bipados-base">0</span><span class="lbl">Bipados na Nuvem</span></div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-icon" style="background:var(--cor-backlog)">⏳</div>
-                        <div class="kpi-data"><span class="val" id="kpi-pendentes-base">0</span><span class="lbl">Pendente Geral</span></div>
-                    </div>
-                </div>
-            </div>
+    let baseGeral = {};
+    let baseTotem = {};
+    let paginasData = {};
+    const TOTAL_PAGINAS = 100;
 
-            <div id="page-totem" class="page">
-                <input type="text" id="scanner" class="input-scan" placeholder="BIPE O CÓDIGO DE BARRAS (BR) AQUI..." onkeypress="executarBip(event)" autocomplete="off">
-                
-                <div class="grid-3">
-                    <div class="kpi-card">
-                        <div class="kpi-icon" style="background:var(--cor-ok)">🎯</div>
-                        <div class="kpi-data"><span class="val" id="kpi-totem-sessao">0</span><span class="lbl">Bipados nesta Sessão</span></div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-icon" style="background:var(--cor-rota)">🗺️</div>
-                        <div class="kpi-data"><span class="val" id="kpi-totem-rota">-</span><span class="lbl">Última Rota Mapeada</span></div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-icon" style="background:var(--cor-copy)">📝</div>
-                        <div class="kpi-data"><span class="val" id="kpi-totem-status">-</span><span class="lbl">Status do Último Pacote</span></div>
-                    </div>
-                </div>
+    // Função Tema Escuro com Sol ☀️ e Lua 🌙
+    function toggleDarkMode() {
+        const isDark = document.body.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', isDark);
+        updateDarkIcons();
+        atualizarCorFundoTotem();
+    }
+   
+    // Função específica para o botão do Totem não bugar o fundo
+    function toggleDarkModeTotem() {
+        toggleDarkMode();
+    }
 
-                <div class="card">
-                    <div class="card-title">🕒 Últimos 10 Pacotes Processados</div>
-                    <div class="table-responsive">
-                        <table class="table-view" id="tabela-sessao-recente">
-                            <thead>
-                                <tr><th>Hora</th><th>Pedido</th><th>Rota / Gaiola</th><th>Status Operacional</th></tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    function updateDarkIcons() {
+        const icons = document.querySelectorAll('.dark-icon');
+        const isDark = document.body.classList.contains('dark-mode');
+        icons.forEach(icon => icon.innerText = isDark ? '☀️' : '🌙');
+    }
 
-            <div id="page-master" class="page">
-                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <div class="page-indicator-grid" id="grid-paginas-botoes"></div>
-                    <button class="btn btn-primary" onclick="exportarPorPagina()">📥 Exportar Planilha (.xlsx)</button>
-                </div>
-
-                <div class="card">
-                    <div class="card-title" id="titulo-pagina-atual">📄 Visualizando: Página 1</div>
-                    <div class="table-responsive">
-                        <table class="table-view" id="tabela-master-visualizacao">
-                            <thead>
-                                <tr><th>Nº</th><th>Código de Rastreio (BR)</th><th>Rota de Destino</th><th>Status Atual</th></tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyD4-kttLAn-QvxF7LIX-BMtTfCcz5HLnuk",
-            authDomain: "erro-de-etiquetagem.firebaseapp.com",
-            projectId: "erro-de-etiquetagem",
-            storageBucket: "erro-de-etiquetagem.firebasestorage.app",
-            messagingSenderId: "924044206334",
-            appId: "1:924044206334:web:b1faf5bc9c94eb04c305af"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        const TOTAL_PAGINAS = 30;
-        const LIMITE_POR_PAGINA = 1000;
-        const SENHA_MASTER = "admin2846";
-
-        let baseDeDadosMapeada = new Map();
-        let paginasData = {};
-        let bipsGlobaisNuvem = {};
-        let contadorSessaoLocal = 0;
-        let paginaMonitorAtiva = 1;
-
-        for (let i = 1; i <= TOTAL_PAGINAS; i++) {
-            paginasData[i] = { bips: [], mapeamentoCodigos: new Map() };
+    // Adapta o fundo geral se estiver na aba do totem
+    function atualizarCorFundoTotem() {
+        if (window.location.hash === '#totem') {
+            const isDark = document.body.classList.contains('dark-mode');
+            document.body.style.background = isDark ? 'var(--shopee-bg)' : '#f5f5f5';
         }
+    }
 
-        function carregarDadosSalvosNavegador() {
-            try {
-                const registrosSalvos = localStorage.getItem("spx_totem_base");
-                if(registrosSalvos) {
-                    const lista = JSON.parse(registrosSalvos);
-                    baseDeDadosMapeada = new Map(lista);
-                    distribuirCodigosNasPaginas();
-                    recalcularDashboard();
-                    renderizarAbasEstatisticas();
-                }
-            } catch(e) { console.error(e); }
-        }
-
-        db.ref("operacao/bips").on("value", (snapshot) => {
-            bipsGlobaisNuvem = snapshot.val() || {};
-            document.getElementById('cloud-status').innerHTML = "🟢 CLOUD ONLINE";
-            reindexarBipsEAtualizar();
-        });
-
-        function reindexarBipsEAtualizar() {
-            for (let i = 1; i <= TOTAL_PAGINAS; i++) {
-                paginasData[i].bips.forEach(b => { b.status = "PENDENTE"; });
+    // Leitura do Banco de Dados - Mestre (Escuta nuvem)
+    db.ref("operacao/base").on("value", (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            baseGeral = data;
+            const infoBase = document.getElementById('infoBase');
+            if(infoBase) {
+                infoBase.innerText = " " + Object.keys(baseGeral).length + " pedidos carregados.";
             }
+        }
+        db.ref("operacao/bips").once("value", (snapBips) => reprocessarDadosRemotos(snapBips.val() || {}));
+    });
 
-            Object.entries(bipsGlobaisNuvem).forEach(([codigo, dados]) => {
-                for (let i = 1; i <= TOTAL_PAGINAS; i++) {
-                    if (paginasData[i].mapeamentoCodigos.has(codigo)) {
-                        const idx = paginasData[i].mapeamentoCodigos.get(codigo);
-                        paginasData[i].bips[idx].status = dados.status || "OK";
-                    }
+    // Leitura do Banco de Dados - Totem (Escuta nuvem)
+    db.ref("operacao/basetotem").on("value", (snapshot) => {
+        const data = snapshot.val();
+        if(data) {
+            baseTotem = data;
+            const rotasTotem = Object.keys(baseTotem).length;
+            const infoBaseTotem = document.getElementById('infoBaseTotem');
+            if(infoBaseTotem) {
+                infoBaseTotem.innerText = " " + rotasTotem + " rotas carregadas para auditoria.";
+            }
+        }
+    });
+
+    db.ref("operacao/bips").on("value", (snapshot) => reprocessarDadosRemotos(snapshot.val() || {}));
+
+    function init() {
+        if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+        updateDarkIcons();
+
+        // LÓGICA DE SEPARAÇÃO DO TOTEM: (Transforma a tela em App Shopee)
+        if (window.location.hash === '#totem') {
+            document.getElementById('sidebar').style.display = 'none';
+            document.getElementById('page-master').classList.remove('active');
+            document.getElementById('page-totem').classList.add('active');
+            document.getElementById('mainContent').style.padding = '0'; // Remove o padding padrão para o header colar no topo
+            atualizarCorFundoTotem();
+           
+            setTimeout(() => document.getElementById('totemRota').focus(), 300);
+            return;
+        }
+
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+       
+        for (let i = 1; i <= TOTAL_PAGINAS; i++) {
+            paginasData[i] = { at: null, rota: null, total: 0, bips: [] };
+           
+            const qrUrlVazio = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=VAZIO`;
+
+            const btn = document.createElement('div');
+            btn.className = 'tab-link';
+            btn.id = `link-${i}`;
+            btn.innerHTML = `PÁGINA ${i} <br><small id="label-${i}" style="opacity:0.6">Vazia</small>`;
+            btn.onclick = () => switchTab(i);
+            sidebar.appendChild(btn);
+
+            const page = document.createElement('div');
+            page.className = 'page';
+            page.id = `page-${i}`;
+            page.innerHTML = `
+                <div class="header-status">
+                    <div><span class="header-label">Atribuição</span><span id="at-${i}">---</span></div>
+                    <div><span class="header-label">Rota</span><span id="rt-${i}">---</span></div>
+                    <div><span class="header-label">Sist.</span><span id="qs-${i}">0</span></div>
+                    <div><span class="header-label">Bip</span><span id="qb-${i}">0</span></div>
+                    <div><span class="header-label">Faltas</span><span id="ft-${i}">0</span></div>
+                    <button class="btn-dark-toggle" onclick="toggleDarkMode()" title="Alternar Tema"><span class="dark-icon"></span></button>
+                    <div><button class="btn" style="background:var(--cor-copy); width: 100%;" onclick="copiarBrsCorretas(${i})"> COPIAR</button></div>
+                    <div><button class="btn" style="background:var(--cor-reset); width: 100%;" onclick="limparPaginaEspecifica(${i})"> RESET</button></div>
+                    <div class="qr-container"><img id="qr-img-${i}" src="${qrUrlVazio}" title="Aguardando Atribuição"></div>
+                </div>
+                <div class="input-bar"><input type="text" class="scan-box" id="input-${i}" placeholder="Bipe aqui..." onkeypress="handleScan(event, ${i})"></div>
+                <div class="layout-grid">
+                    <div class="main-table-container"><table class="main-table" id="table-${i}"><thead><tr><th>Código BR</th><th>OBS</th><th>Rota</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+                    <div>
+                        <div class="error-grid">
+                            <div class="error-header" style="background:var(--cor-backlog);color:black">BACKLOG</div>
+                            <div class="error-header" style="background:var(--cor-rota)">ROTA</div>
+                            <div class="error-header" style="background:var(--cor-dup)">DUP</div>
+                            <div id="err-back-${i}" class="error-list"></div>
+                            <div id="err-rot-${i}" class="error-list"></div>
+                            <div id="err-dup-${i}" class="error-list"></div>
+                        </div>
+                        <div style="background:#333; color:white; padding:5px; text-align:center; font-size:11px; margin-top:10px;">FALTANTES</div>
+                        <div id="faltas-${i}" class="error-list" style="height:180px; border:1px solid #333; color:#ef4444;"></div>
+                    </div>
+                </div>
+            `;
+            mainContent.appendChild(page);
+        }
+        updateDarkIcons();
+    }
+
+    function abrirTotemNovaAba() {
+        const baseUrl = window.location.href.split('#')[0];
+        window.open(baseUrl + '#totem', '_blank');
+    }
+
+    // LÓGICA DE IMPORTAÇÃO MESTRE - Atualizada para Offline
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            const tempBase = {};
+            let count = 0;
+           
+            json.forEach(row => {
+                const br = String(row['SPX tracking num'] || row['Pedidos'] || row['Tracking Number'] || '').trim();
+                const rotaID = row['Corridor-Cage/Route'] || row['Cluster'] || row['Route Number'] || '---';
+                if(br) {
+                    tempBase[br] = { at: row['Task ID'] || row['Atribuição'] || '---', rota: rotaID };
+                    count++;
                 }
             });
+           
+            baseGeral = tempBase;
+            const infoBase = document.getElementById('infoBase');
+            if(infoBase) infoBase.innerText = " " + count + " pedidos carregados.";
+           
+            db.ref("operacao/base").set(tempBase);
+            alert(`Sucesso! ${count} pedidos da Base Mestre foram carregados no sistema.`);
+            this.value = '';
+        };
+        reader.readAsArrayBuffer(e.target.files[0]);
+    });
 
-            recalcularDashboard();
-            renderizarAbasEstatisticas();
-            if (document.getElementById('page-master').classList.contains('active')) {
-                renderizarPaginaMaster(paginaMonitorAtiva);
-            }
+    // LÓGICA DE IMPORTAÇÃO TOTEM - À PROVA DE FALHAS (CSV e XLS) E IGNORANDO LINHA 1
+    function lerPlanilhaTotem() {
+        const fileInput = document.getElementById('fileInputTotem');
+        if (!fileInput.files.length) {
+            alert("Por favor, selecione o arquivo do Totem Check primeiro.");
+            return;
         }
 
-        // ==================== SEÇÃO MODIFICADA CIRURGICAMENTE (LERARQUIVOCSV) ====================
-        window.lerArquivoCSV = function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            document.getElementById('import-msg').innerHTML = "⏳ Processando base de dados gigante... Aguarde.";
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                const textoCompleto = e.target.result;
-                
-                const primeiraQuebra = textoCompleto.indexOf('\n');
-                if (primeiraQuebra === -1) return;
-                const cabecalhoLinha = textoCompleto.substring(0, primeiraQuebra);
-                const delimitador = cabecalhoLinha.includes(';') ? ';' : ',';
-                
-                const cabecalhos = cabecalhoLinha.split(delimitador).map(c => c.trim().toLowerCase());
-                
-                // Mapeamento correto com os nomes das colunas da planilha exportada (Shopee)
-                let colTracking = cabecalhos.findIndex(c => c.includes('spx tracking num') || c.includes('spx tracking number'));
-                let colRota = cabecalhos.findIndex(c => c.includes('corridor-cage/route') || c.includes('route') || c.includes('rota'));
-
-                if (colTracking === -1) {
-                    document.getElementById('import-msg').innerHTML = "❌ Coluna de rastreio ('SPX tracking num') não encontrada no CSV.";
-                    return;
-                }
-
-                baseDeDadosMapeada.clear();
-                
-                let cursorIndex = primeiraQuebra + 1;
-                let finalTexto = textoCompleto.length;
-
-                // Processador linear ultra rápido caractere por caractere
-                while (cursorIndex < finalTexto) {
-                    let proximaQuebra = textoCompleto.indexOf('\n', cursorIndex);
-                    if (proximaQuebra === -1) proximaQuebra = finalTexto;
-                    
-                    let linhaStr = textoCompleto.substring(cursorIndex, proximaQuebra).trim();
-                    cursorIndex = proximaQuebra + 1;
-
-                    if (!linhaStr) continue;
-
-                    let colunas = linhaStr.split(delimitador);
-                    if (colunas[colTracking]) {
-                        let codigoBR = colunas[colTracking].trim().toUpperCase();
-                        let nomeRota = colRota !== -1 && colunas[colRota] ? colunas[colRota].trim() : "Sem Rota";
-                        
-                        if(codigoBR && codigoBR !== "NULL" && codigoBR !== "") {
-                            baseDeDadosMapeada.set(codigoBR, nomeRota);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+               
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 'A', defval: ""});
+                const tempBaseTotem = {};
+                let count = 0;
+               
+                // Ignora a linha 1 (Cabeçalho B1, D1)
+                for (let i = 1; i < json.length; i++) {
+                    const row = json[i];
+                   
+                    let rota = row['B'] ? row['B'].toString().trim().toUpperCase() : '';
+                    let qtd = row['D'] ? row['D'].toString().trim() : '';
+                   
+                    // FALLBACK CSV
+                    if (!rota && row['A'] && typeof row['A'] === 'string') {
+                        let separador = row['A'].includes(';') ? ';' : (row['A'].includes(',') ? ',' : null);
+                        if (separador) {
+                            const partes = row['A'].split(separador);
+                            rota = partes[1] ? partes[1].trim().toUpperCase() : '';
+                            qtd = partes[3] ? partes[3].trim() : '';
                         }
                     }
+
+                    if (rota && qtd) {
+                        rota = rota.replace(/^"|"$/g, '');
+                        qtd = qtd.replace(/^"|"$/g, '');
+                       
+                        tempBaseTotem[rota] = qtd;
+                        count++;
+                    }
                 }
 
-                try {
-                    localStorage.setItem("spx_totem_base", JSON.stringify(Array.from(baseDeDadosMapeada.entries())));
-                    document.getElementById('import-msg').innerHTML = `✅ Sucesso! ${baseDeDadosMapeada.size} registros carregados.`;
-                    
-                    distribuirCodigosNasPaginas();
-                    reindexarBipsEAtualizar();
-                } catch(err) {
-                    document.getElementById('import-msg').innerHTML = "❌ Limite de armazenamento local excedido.";
-                    console.error(err);
+                if (count === 0) {
+                    alert("Atenção: Nenhuma informação foi lida.\nO sistema buscou a Rota na Coluna B e a Quantidade na Coluna D (começando da linha 2).\nVerifique se os dados não estão em colunas diferentes ou se a planilha está vazia.");
+                    return;
                 }
-            };
+               
+                baseTotem = tempBaseTotem;
+                const infoBaseTotem = document.getElementById('infoBaseTotem');
+                if(infoBaseTotem) infoBaseTotem.innerText = " " + count + " rotas carregadas para auditoria (B2 e D2 em diante).";
+               
+                // Salva no banco da Shopee/Totem no Firebase
+                db.ref("operacao/basetotem").set(tempBaseTotem);
+               
+                alert(`Sucesso! ${count} rotas carregadas perfeitamente. Você já pode abrir a nova aba do Totem Check.`);
+                fileInput.value = '';
 
-            reader.readAsText(file, "UTF-8");
-        };
-        // ==================== FIM DA SEÇÃO MODIFICADA ====================
-
-        function distribuirCodigosNasPaginas() {
-            for (let i = 1; i <= TOTAL_PAGINAS; i++) {
-                paginasData[i] = { bips: [], mapeamentoCodigos: new Map() };
+            } catch (error) {
+                console.error("Erro na leitura:", error);
+                alert("Erro ao ler o arquivo CSV. Verifique se o arquivo não está corrompido.");
             }
+        };
+        reader.readAsArrayBuffer(fileInput.files[0]);
+    }
 
-            let arrayItens = Array.from(baseDeDadosMapeada.entries());
-            let paginaAtual = 1;
+    // CONTROLES DO TOTEM CHECK
+    document.getElementById('totemRota').addEventListener('keypress', function(e) {
+        if(e.key === 'Enter') {
+            e.preventDefault();
+            const rota = this.value.trim();
+            if(rota) document.getElementById('totemQtd').focus();
+        }
+    });
 
-            arrayItens.forEach(([codigo, rota], index) => {
-                if (paginasData[paginaAtual].bips.length >= LIMITE_POR_PAGINA) {
-                    paginaAtual++;
-                }
-                if (paginaAtual <= TOTAL_PAGINAS) {
-                    let listaP = paginasData[paginaAtual].bips;
-                    let localIdx = listaP.length;
-                    
-                    listaP.push({ br: codigo, rota: rota, status: "PENDENTE" });
-                    paginasData[paginaAtual].mapeamentoCodigos.set(codigo, localIdx);
-                }
+    document.getElementById('totemQtd').addEventListener('keypress', function(e) {
+        if(e.key === 'Enter') {
+            e.preventDefault();
+            verificarTotem();
+        }
+    });
+
+    function verificarTotem() {
+        const rota = document.getElementById('totemRota').value.trim().toUpperCase();
+        const qtdContada = document.getElementById('totemQtd').value.trim();
+        const resDiv = document.getElementById('totemResultado');
+        const qrContainer = document.getElementById('totemQrContainer');
+        const qrImg = document.getElementById('qr-totem');
+
+        if(!rota || !qtdContada) return;
+
+        if(!baseTotem.hasOwnProperty(rota)) {
+            resDiv.style.display = 'block';
+            resDiv.style.background = 'var(--cor-backlog)'; // Amarelo Shopee erro
+            resDiv.style.color = '#000';
+            resDiv.innerText = "ROTA NÃO ENCONTRADA NA PLANILHA";
+            qrContainer.style.display = 'none';
+           
+            document.getElementById('totemRota').value = '';
+            document.getElementById('totemRota').focus();
+            return;
+        }
+
+        const qtdEsperada = baseTotem[rota];
+
+        if(qtdContada === qtdEsperada) {
+            resDiv.style.display = 'block';
+            resDiv.style.background = 'var(--cor-ok)'; // Verde Sucesso
+            resDiv.style.color = '#fff';
+            resDiv.innerText = "CONTAGEM CORRETA";
+           
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=LIBERADO_${encodeURIComponent(rota)}`;
+            qrContainer.style.display = 'flex';
+
+            document.getElementById('totemRota').value = '';
+            document.getElementById('totemQtd').value = '';
+            document.getElementById('totemRota').focus();
+
+        } else {
+            resDiv.style.display = 'block';
+            resDiv.style.background = 'var(--cor-header)'; // Vermelho Erro
+            resDiv.style.color = '#fff';
+            resDiv.innerText = "CONTAR NOVAMENTE";
+            qrContainer.style.display = 'none';
+
+            document.getElementById('totemQtd').value = '';
+            document.getElementById('totemQtd').focus();
+        }
+    }
+
+    // LÓGICA DAS PÁGINAS NORMAIS DE BIP
+    function handleScan(event, idx) {
+        if (event.key === 'Enter') {
+            const br = event.target.value.trim();
+            if (!br) return;
+            db.ref(`operacao/bips/p${idx}`).push({ br: br, ts: Date.now() });
+            event.target.value = '';
+        }
+    }
+
+    function reprocessarDadosRemotos(dadosBips) {
+        for (let i = 1; i <= TOTAL_PAGINAS; i++) {
+            const pag = paginasData[i];
+            const bipsRemotos = dadosBips[`p${i}`] || {};
+            pag.bips = [];
+            pag.at = null;
+            const listaBips = Object.values(bipsRemotos).sort((a,b) => a.ts - b.ts);
+           
+            listaBips.forEach(b => {
+                const item = baseGeral[b.br];
+                if (!pag.at && item) { pag.at = item.at; pag.rota = item.rota; }
             });
-        }
 
-        window.executarBip = function(e) {
-            if (e.key === "Enter") {
-                const codigo = e.target.value.trim().toUpperCase();
-                e.target.value = "";
-                if (!codigo) return;
-
-                let rotaIdentificada = "NÃO CADASTRADO";
-                let statusOperacao = "OK";
-
-                if (baseDeDadosMapeada.has(codigo)) {
-                    rotaIdentificada = baseDeDadosMapeada.get(codigo);
-                }
-
-                if (bipsGlobaisNuvem[codigo]) {
-                    statusOperacao = "DUPLICADO";
-                }
-
-                db.ref("operacao/bips/" + codigo).set({
-                    rota: rotaIdentificada,
-                    status: statusOperacao,
-                    timestamp: Date.now(),
-                    hora: new Date().toLocaleTimeString('pt-BR')
-                });
-
-                contadorSessaoLocal++;
-                document.getElementById('kpi-totem-sessao').innerText = contadorSessaoLocal;
-                document.getElementById('kpi-totem-rota').innerText = rotaIdentificada;
-                document.getElementById('kpi-totem-status').innerText = statusOperacao;
-
-                const tbody = document.querySelector("#tabela-sessao-recente tbody");
-                let classeBadge = statusOperacao === "OK" ? "bg-ok" : "bg-dup";
-                let novaLinha = `<tr>
-                    <td>${new Date().toLocaleTimeString('pt-BR')}</td>
-                    <td style="font-family:monospace; font-weight:700;">${codigo}</td>
-                    <td>${rotaIdentificada}</td>
-                    <td><span class="badge ${classeBadge}">${statusOperacao}</span></td>
-                </tr>`;
-                tbody.insertAdjacentHTML('afterbegin', novaLinha);
-            }
-        };
-
-        function recalcularDashboard() {
-            let totalBase = baseDeDadosMapeada.size;
-            let totalBipados = Object.keys(bipsGlobaisNuvem).length;
-            let totalPendentes = totalBase - totalBipados;
-            if(totalPendentes < 0) totalPendentes = 0;
-
-            document.getElementById('kpi-total-base').innerText = totalBase.toLocaleString();
-            document.getElementById('kpi-bipados-base').innerText = totalBipados.toLocaleString();
-            document.getElementById('kpi-pendentes-base').innerText = totalPendentes.toLocaleString();
-        }
-
-        function renderiasBotoesPaginas() {
-            const container = document.getElementById("grid-paginas-botoes");
-            if(!container) return;
-            container.innerHTML = "";
-
-            for (let i = 1; i <= TOTAL_PAGINAS; i++) {
-                let temDados = paginasData[i].bips.length > 0;
-                let classeExtra = temDados ? "has-data" : "";
-                if(i === paginaMonitorAtiva) classeExtra += " active";
-
-                container.innerHTML += `<button class="page-indicator-btn ${classeExtra}" onclick="selecionarPaginaMonitor(${i})">Pág. ${i}</button>`;
-            }
-        }
-
-        window.selecionarPaginaMonitor = function(num) {
-            paginaMonitorAtiva = num;
-            renderiasBotoesPaginas();
-            renderizarPaginaMaster(num);
-        };
-
-        function renderizarPaginaMaster(num) {
-            document.getElementById("titulo-pagina-atual").innerText = `📄 Visualizando: Página ${num}`;
-            const tbody = document.querySelector("#tabela-master-visualizacao tbody");
-            if(!tbody) return;
-            tbody.innerHTML = "";
-
-            const dadosPagina = paginasData[num].bips;
-            if(dadosPagina.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="color:var(--text-muted); padding:20px;">Nenhum registro alocado para esta página até o momento.</td></tr>`;
-                return;
-            }
-
-            dadosPagina.forEach((item, index) => {
-                let badgeStatus = "bg-backlog";
-                if (item.status === "OK") badgeStatus = "bg-ok";
-                if (item.status === "DUPLICADO") badgeStatus = "bg-dup";
-
-                tbody.innerHTML += `<tr>
-                    <td>${index + 1}</td>
-                    <td style="font-family:monospace; font-weight:700;">${item.br}</td>
-                    <td>${item.rota}</td>
-                    <td><span class="badge ${badgeStatus}">${item.status}</span></td>
-                </tr>`;
+            listaBips.forEach(b => {
+                const item = baseGeral[b.br];
+                let status = "row-ok", obs = "OK", stText = "CORRETA", rota = item ? item.rota : "N/A";
+                const contagem = listaBips.filter(x => x.br === b.br).length;
+                if (contagem > 1) { status = "row-duplicado"; obs = "Duplicidade"; stText = "DUPLICADO"; }
+                else if (!item) { status = "row-backlog"; obs = "Backlog"; stText = "INCORRETA"; }
+                else if (item.at !== pag.at) { status = "row-outrarota"; obs = "Outra Rota"; stText = "INCORRETA"; rota = item.rota; }
+                pag.bips.push({ br: b.br, obs, status: stText, classe: status, rota });
             });
+            renderizarPagina(i);
+        }
+    }
+
+    function renderizarPagina(idx) {
+        const pag = paginasData[idx];
+        const tbody = document.querySelector(`#table-${idx} tbody`);
+        const qrImg = document.getElementById(`qr-img-${idx}`);
+       
+        if(!tbody) return;
+        tbody.innerHTML = "";
+        document.getElementById(`err-back-${idx}`).innerHTML = "";
+        document.getElementById(`err-rot-${idx}`).innerHTML = "";
+        document.getElementById(`err-dup-${idx}`).innerHTML = "";
+       
+        if (pag.at) {
+            pag.total = Object.values(baseGeral).filter(v => v.at === pag.at).length;
+            document.getElementById(`at-${idx}`).innerText = pag.at;
+            document.getElementById(`rt-${idx}`).innerText = pag.rota;
+            document.getElementById(`qs-${idx}`).innerText = pag.total;
+            document.getElementById(`label-${idx}`).innerText = pag.rota;
+           
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pag.at)}`;
+            qrImg.title = `QR Code Atribuição: ${pag.at}`;
+        } else {
+            document.getElementById(`at-${idx}`).innerText = "---";
+            document.getElementById(`rt-${idx}`).innerText = "---";
+            document.getElementById(`qs-${idx}`).innerText = "0";
+            document.getElementById(`label-${idx}`).innerText = "Vazia";
+           
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=VAZIO`;
+            qrImg.title = `Aguardando Atribuição`;
         }
 
-        window.exportarPorPagina = function() {
-            const wb = XLSX.utils.book_new();
-            let temDados = false;
-            for (let i = 1; i <= TOTAL_PAGINAS; i++) {
-                if (paginasData[i].bips.length > 0) {
-                    temDados = true;
-                    const wsData = [["PEDIDO", "ROTA", "STATUS"]];
-                    paginasData[i].bips.forEach(b => wsData.push([b.br, b.rota, b.status]));
-                    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), `Página ${i}`);
-                }
-            }
-            if (temDados) {
-                XLSX.writeFile(wb, `Relatorio_SPX_Paginado.xlsx`);
-            } else {
-                alert("Não há dados para exportar no momento.");
-            }
-        };
+        pag.bips.slice().reverse().forEach(b => {
+            const row = tbody.insertRow(); row.className = b.classe;
+            row.innerHTML = `<td>${b.br}</td><td>${b.obs}</td><td>${b.rota}</td><td>${b.status}</td>`;
+            if (b.classe === "row-backlog") if(!document.getElementById(`err-back-${idx}`).innerText.includes(b.br)) document.getElementById(`err-back-${idx}`).innerHTML += `<div>${b.br}</div>`;
+            if (b.classe === "row-outrarota") if(!document.getElementById(`err-rot-${idx}`).innerText.includes(b.br)) document.getElementById(`err-rot-${idx}`).innerHTML += `<div>${b.br}</div>`;
+            if (b.classe === "row-duplicado") if(!document.getElementById(`err-dup-${idx}`).innerText.includes(b.br)) document.getElementById(`err-dup-${idx}`).innerHTML += `<div>${b.br}</div>`;
+        });
+       
+        const okCount = pag.bips.filter(b => b.classe === "row-ok").length;
+        document.getElementById(`qb-${idx}`).innerText = okCount;
+        document.getElementById(`ft-${idx}`).innerText = (pag.total || 0) - okCount;
+        const faltantes = Object.keys(baseGeral).filter(k => baseGeral[k].at === pag.at && !pag.bips.some(b => b.br === k));
+        document.getElementById(`faltas-${idx}`).innerHTML = faltantes.map(f => `<div>${f}</div>`).join('');
+    }
 
-        function renderizarAbasEstatisticas() {
-            if (document.getElementById('page-master').classList.contains('active')) {
-                renderiasBotoesPaginas();
+    function copiarBrsCorretas(idx) {
+        const corretas = paginasData[idx].bips.filter(b => b.classe === "row-ok").map(b => b.br);
+        if (corretas.length === 0) return alert("Nada para copiar.");
+        navigator.clipboard.writeText(corretas.join('\n')).then(() => alert(`${corretas.length} BRs copiadas!`));
+    }
+
+    function limparPaginaEspecifica(idx) { if(confirm("Limpar bips?")) db.ref(`operacao/bips/p${idx}`).remove(); }
+    function limparApenasBase() { if(confirm("Apagar Planilha Mestre?")) db.ref("operacao/base").remove(); }
+    function limparBancoRemoto() { if(confirm("RESET TOTAL (Bips e Bases)?")) { db.ref("operacao").remove(); location.reload(); } }
+
+    function exportarPorPagina() {
+        const wb = XLSX.utils.book_new();
+        let temDados = false;
+        for (let i = 1; i <= TOTAL_PAGINAS; i++) {
+            if (paginasData[i].bips.length > 0) {
+                temDados = true;
+                const wsData = [["PEDIDO", "OBSERVAÇÃO", "ROTA", "STATUS"]];
+                paginasData[i].bips.forEach(b => wsData.push([b.br, b.obs, b.rota, b.status]));
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), `Página ${i}`);
             }
         }
+        if (temDados) XLSX.writeFile(wb, `Relatorio_SPX.xlsx`);
+        else alert("Não há dados para exportar.");
+    }
 
-        window.switchTab = function(id) {
-            if (id === 'master' && prompt("🔒 Senha de Segurança:") !== SENHA_MASTER) {
-                alert("Acesso negado.");
-                return;
-            }
-            document.querySelectorAll('.page, .tab-link').forEach(el => el.classList.remove('active'));
-            
+    // NAVEGAÇÃO DE ABAS
+    function switchTab(id) {
+        document.querySelectorAll('.page, .tab-link').forEach(el => el.classList.remove('active'));
+       
+        if(id === 'master') {
+            document.getElementById('page-master').classList.add('active');
+            document.getElementById('link-master').classList.add('active');
+        } else {
             document.getElementById(`page-${id}`).classList.add('active');
             document.getElementById(`link-${id}`).classList.add('active');
-
-            const titulos = { 'import': 'Carregar Base Operacional', 'totem': 'Estação de Bipagem Automatizada', 'master': 'Painel Analítico de Páginas' };
-            document.getElementById('navbar-title').innerText = titulos[id];
-
-            if (id === 'totem') {
-                setTimeout(() => document.getElementById('scanner').focus(), 100);
-            }
-            if (id === 'master') {
-                selecionarPaginaMonitor(1);
-            }
-        };
-
-        window.toggleTheme = function() {
-            document.body.classList.toggle('dark-mode');
-        };
-
-        window.limparBancoRemoto = function() {
-            if (prompt("⚠️ DIGITE A SENHA MASTER PARA COLD RESET:") === SENHA_MASTER) {
-                if(confirm("Isso apagará TODOS os bips de todos os computadores. Continuar?")) {
-                    db.ref("operacao").remove();
-                    localStorage.removeItem("spx_totem_base");
-                    location.reload();
-                }
-            }
-        };
-
-        carregarDadosSalvosNavegador();
-    </script>
+            setTimeout(() => document.getElementById(`input-${id}`).focus(), 100);
+        }
+    }
+   
+    window.onload = init;
+</script>
 </body>
 </html>
